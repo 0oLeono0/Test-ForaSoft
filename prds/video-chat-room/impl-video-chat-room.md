@@ -79,30 +79,30 @@ flowchart LR
     - Зависит от: 1.1.
     - _Requirements: —, Design: 3.3_
 
-- [ ] 2. Пакет `@vcr/shared`: константы, контракты событий, валидация
+- [x] 2. Пакет `@vcr/shared`: константы, контракты событий, валидация
   - Единый источник продуктовых констант, имён событий, описаний DTO и правил валидации для клиента и сервера.
   - _Requirements: FR-1, FR-7, FR-24, FR-30, FR-38, FR-39, FR-40, Design: 4.3, 5.2, 6.2, 6.3, 8.1_
 
-  - [ ] 2.1 Константы и коды ошибок — **0.25 д**
+  - [x] 2.1 Константы и коды ошибок — **0.25 д**
     - `constants.js`: `MAX_PARTICIPANTS`, `NAME_MAX_LENGTH`, `MESSAGE_MAX_LENGTH`, `CHAT_HISTORY_LIMIT`, `ROOM_ID_PATTERN`, `NAME_ALLOWED_CHARS`, `NAME_HAS_ALNUM`.
     - `errors.js`: `ERROR_CODES` (12 кодов из §8.1, `Object.freeze`) и `ERROR_MESSAGES` с русскими текстами для каждого кода; тест, что у каждого кода есть текст.
     - Зависит от: 1.4.
     - _Requirements: FR-7, FR-8, FR-38, FR-40, Design: 4.3, 8.1_
 
-  - [ ] 2.2 Словарь событий и JSDoc-описания DTO — **0.25 д**
+  - [x] 2.2 Словарь событий и JSDoc-описания DTO — **0.25 д**
     - `events.js`: константы имён событий `CLIENT_EVENTS` (`room:join`, `room:leave`, `chat:send`, `media:state`, `signal`) и `SERVER_EVENTS` (`participant:joined` / `left` / `media`, `chat:message`, `signal`, `signal:error`).
     - JSDoc `@typedef` для `ParticipantDTO`, `ChatMessage`, `SignalData` и формата ack из §5.2, §6.2, §6.3 — справка для IDE и ревью; barrel-экспорт в `index.js`.
     - Unit-тест: имена событий уникальны и совпадают с таблицами §6.3–6.4.
     - Зависит от: 2.1.
     - _Requirements: FR-10, FR-21, FR-22, FR-26, FR-30, Design: 5.2, 6.2, 6.3_
 
-  - [ ] 2.3 Валидация и нормализация имени — **0.5 д**
+  - [x] 2.3 Валидация и нормализация имени — **0.5 д**
     - `normalizeName` (trim, схлопывание пробелов, NFC), `validateName(raw)` (принимает значение любого типа) → `NAME_EMPTY` / `NAME_TOO_LONG` / `NAME_INVALID_CHARS`; длина считается в code points.
     - Unit-тесты граничных случаев: пустое и пробельное имя; ровно 30 и 31 символ; кириллица, `ё`, латиница, цифры, `-_.`; `"..."`; эмодзи; `<script>`; кавычки; `/`; zero-width space; комбинируемые диакритики.
     - Зависит от: 2.1.
     - _Requirements: FR-1, FR-38, US-1, Design: 4.3, 11.2_
 
-  - [ ] 2.4 Валидация сообщения и идентификатора комнаты — **0.5 д**
+  - [x] 2.4 Валидация сообщения и идентификатора комнаты — **0.5 д**
     - `normalizeMessage` (trim, удаление `\p{Cc}` кроме `\n`, удаление bidi-override `U+202A–202E`, `U+2066–2069`), `validateMessage` → `MESSAGE_EMPTY` / `MESSAGE_TOO_LONG`; `isValidRoomId(id)` → `boolean` (не-строка → `false`).
     - Unit-тесты: пробелы и переводы строк, 1000/1001 символ, управляющие и bidi-символы, границы `roomId` 0/1/64/65 символов, кириллица и `nanoid(10)` проходят, недопустимые символы (`a/b`, `<b>`, пробел, `%`) не проходят.
     - Зависит от: 2.1.
