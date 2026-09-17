@@ -49,7 +49,7 @@ flowchart LR
 
 ## Задачи
 
-- [ ] 1. Каркас монорепозитория на JavaScript
+- [x] 1. Каркас монорепозитория на JavaScript
   - npm workspaces, ESM, линт, тестовый раннер и подключение `@vcr/shared` к серверу и клиенту.
   - _Requirements: PRD §7 (стек), Design: 1.2, 3.3, 3.4, 12.1_
 
@@ -73,7 +73,7 @@ flowchart LR
     - По одному smoke-тесту на пакет.
     - _Requirements: —, Design: 11.1, 11.7_
 
-  - [ ] 1.4 Подключить `@vcr/shared` к серверу и клиенту — **0.25 д**
+  - [x] 1.4 Подключить `@vcr/shared` к серверу и клиенту — **0.25 д**
     - `shared/package.json`: `"type": "module"`, `"exports": "./src/index.js"` (сборка не нужна — это обычные ES-модули).
     - Workspace-зависимость `@vcr/shared` в `server` и `client`; смоук-импорт заглушки (`export const MAX_PARTICIPANTS = 4`) из Node, из Vite (dev и `vite build`) и из Vitest.
     - Зависит от: 1.1.

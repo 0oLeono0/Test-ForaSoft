@@ -3,5 +3,8 @@
   "version": "0.1.0",
   "private": true,
   "description": "Сигнальный сервер: Express, Socket.io, комнаты в памяти",
-  "type": "module"
+  "type": "module",
+  "dependencies": {
+    "@vcr/shared": "^0.1.0"
+  }
 }

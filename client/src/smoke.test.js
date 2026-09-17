@@ -1,3 +1,4 @@
+import { MAX_PARTICIPANTS } from '@vcr/shared';
 import { describe, expect, it } from 'vitest';
 
 describe('client: тестовый раннер', () => {
@@ -8,5 +9,9 @@ describe('client: тестовый раннер', () => {
 
     expect(heading).toBeInTheDocument();
     expect(heading).toHaveTextContent('Видеочат');
+  });
+
+  it('импортирует @vcr/shared через Vitest', () => {
+    expect(MAX_PARTICIPANTS).toBe(4);
   });
 });
