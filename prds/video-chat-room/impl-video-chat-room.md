@@ -215,7 +215,7 @@ flowchart LR
     - Зависит от: 4.5, 4.6, 5.1.
     - _Requirements: FR-10, FR-15, FR-16, FR-38, FR-40, Design: 8.1, 10.1, 10.4, 11.3_
 
-- [ ] 6. Клиент: каркас приложения и UI-компоненты
+- [x] 6. Клиент: каркас приложения и UI-компоненты
   - Vite + React, роутинг, reducer и «глупые» компоненты: работают на моках, от сети и WebRTC не зависят.
   - _Requirements: FR-1…FR-3, FR-8, FR-11, FR-12, FR-16, FR-18, FR-21…FR-28, FR-35…FR-39, PRD §6, Design: 4.1.1, 4.1.5, 4.1.6, 5.4, 7.5, 8.2_
 
@@ -271,7 +271,7 @@ flowchart LR
     - Зависит от: 6.2, 6.5.
     - _Requirements: FR-3, FR-15, FR-17, FR-26, FR-27, FR-30, US-3, US-7, US-9, Design: 4.1.5_
 
-  - [ ] 6.8 `VideoTile`, `VideoGrid`, `useMediaElement` — **1 д**
+  - [x] 6.8 `VideoTile`, `VideoGrid`, `useMediaElement` — **1 д**
     - `useMediaElement(stream)`: привязка `srcObject`, вызов `play()`, отчёт о `NotAllowedError` (для autoplay, задача 8.6), очистка при размонтировании.
     - `VideoTile`: `<video autoPlay playsInline>`, оверлей имени, иконка перечёркнутого микрофона, силуэт + имя при `video=false`, бейдж «Нет медиасоединения» при `linkStatus='failed'`; self — `muted`, зеркально, подпись «Вы», своя рамка.
     - `VideoGrid`: раскладка по `gridLayout`, self первой; плитки 16:9, `object-fit: cover`.
