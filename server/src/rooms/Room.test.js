@@ -47,18 +47,21 @@ describe('Room: создание', () => {
 });
 
 describe('Room: участники', () => {
-  it('add/has/size/remove', () => {
+  it('add/has/get/size/remove', () => {
     const room = new Room('r');
     const a = makeParticipant('a');
 
     room.add(a);
     expect(room.size).toBe(1);
     expect(room.has('a')).toBe(true);
+    expect(room.get('a')).toBe(a);
     expect(room.has('b')).toBe(false);
+    expect(room.get('b')).toBeNull();
 
     expect(room.remove('a')).toBe(a);
     expect(room.size).toBe(0);
     expect(room.has('a')).toBe(false);
+    expect(room.get('a')).toBeNull();
   });
 
   it('remove неизвестного участника возвращает null и ничего не меняет', () => {

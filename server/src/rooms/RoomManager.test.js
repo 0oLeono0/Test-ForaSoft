@@ -5,6 +5,7 @@ import { RoomManager } from './RoomManager.js';
 
 const ROOM_ID = 'V1StGXR8_Z';
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/;
+const PARTICIPANT_FIELDS = ['audio', 'id', 'joinedAt', 'name', 'socketId', 'video'];
 
 /** Входит в комнату и возвращает участника; падает, если вход не удался. */
 function joinOk(manager, name, roomId = ROOM_ID) {
@@ -140,10 +141,9 @@ describe('RoomManager.join', () => {
   it('у всех участников одинаковые права: у первого нет флагов «создатель» (FR-32)', () => {
     const manager = new RoomManager();
     const [creator, ...others] = fillRoom(manager);
-    const fields = ['audio', 'id', 'joinedAt', 'name', 'socketId', 'video'];
 
     for (const participant of [creator, ...others]) {
-      expect(Object.keys(participant).sort()).toEqual(fields);
+      expect(Object.keys(participant).sort()).toEqual(PARTICIPANT_FIELDS);
     }
   });
 
@@ -246,5 +246,250 @@ describe('RoomManager.leave', () => {
     expect(manager.rooms.has('room-a')).toBe(false);
     expect(participantNames(manager, 'room-b')).toEqual(['Алекс']);
     expectIndexConsistent(manager);
+  });
+});
+
+function historyOf(manager, roomId = ROOM_ID) {
+  return manager.rooms.get(roomId).snapshot().messages;
+}
+
+describe('RoomManager.getRoomOf', () => {
+  it('возвращает комнату участника', () => {
+    const manager = new RoomManager();
+    const maria = joinOk(manager, 'Мария', 'room-a');
+    const alex = joinOk(manager, 'Алекс', 'room-b');
+
+    expect(manager.getRoomOf(maria.id)).toBe(manager.rooms.get('room-a'));
+    expect(manager.getRoomOf(alex.id)).toBe(manager.rooms.get('room-b'));
+  });
+
+  it('возвращает null для неизвестного и вышедшего участника', () => {
+    const manager = new RoomManager();
+    const maria = joinOk(manager, 'Мария');
+    joinOk(manager, 'Алекс');
+    manager.leave(maria.id);
+
+    expect(manager.getRoomOf(maria.id)).toBeNull();
+    expect(manager.getRoomOf('unknown')).toBeNull();
+  });
+});
+
+describe('RoomManager.addChatMessage', () => {
+  it('создаёт пользовательское сообщение со временем сервера и именем автора', () => {
+    vi.useFakeTimers({ now: 1789640012000 });
+    const manager = new RoomManager();
+    const maria = joinOk(manager, 'Мария');
+
+    const message = manager.addChatMessage(maria.id, 'Всем привет <b>!</b>');
+
+    expect(message).toEqual({
+      id: expect.stringMatching(UUID),
+      type: 'user',
+      ts: 1789640012000,
+      authorId: maria.id,
+      authorName: 'Мария',
+      text: 'Всем привет <b>!</b>',
+    });
+  });
+
+  it('сохраняет сообщение в историю комнаты автора и не трогает другие комнаты', () => {
+    const manager = new RoomManager();
+    const maria = joinOk(manager, 'Мария', 'room-a');
+    joinOk(manager, 'Алекс', 'room-b');
+
+    const message = manager.addChatMessage(maria.id, 'Привет');
+
+    expect(historyOf(manager, 'room-a')).toEqual([message]);
+    expect(historyOf(manager, 'room-b')).toEqual([]);
+  });
+
+  it('вошедший позже получает историю в порядке отправки (FR-23)', () => {
+    const manager = new RoomManager();
+    const maria = joinOk(manager, 'Мария');
+    const first = manager.addChatMessage(maria.id, 'Раз');
+    const second = manager.addChatMessage(maria.id, 'Два');
+
+    const { room, participant } = manager.join({ roomId: ROOM_ID, name: 'Алекс', socketId: 's2' });
+
+    expect(room.snapshot(participant.id).messages).toEqual([first, second]);
+  });
+
+  it('у каждого сообщения свой id', () => {
+    const manager = new RoomManager();
+    const maria = joinOk(manager, 'Мария');
+
+    const first = manager.addChatMessage(maria.id, 'Привет');
+    const second = manager.addChatMessage(maria.id, 'Привет');
+
+    expect(first.id).not.toBe(second.id);
+  });
+
+  it('имя автора — снимок на момент отправки', () => {
+    const manager = new RoomManager();
+    const maria = joinOk(manager, 'Мария');
+    const message = manager.addChatMessage(maria.id, 'Привет');
+
+    maria.name = 'Мария Иванова';
+
+    expect(message.authorName).toBe('Мария');
+    expect(historyOf(manager)[0].authorName).toBe('Мария');
+  });
+
+  it('возвращает null и не пишет в историю, если автор не в комнате', () => {
+    const manager = new RoomManager();
+    joinOk(manager, 'Мария');
+    const alex = joinOk(manager, 'Алекс');
+    manager.leave(alex.id);
+
+    expect(manager.addChatMessage(alex.id, 'Привет')).toBeNull();
+    expect(manager.addChatMessage('unknown', 'Привет')).toBeNull();
+    expect(historyOf(manager)).toEqual([]);
+  });
+});
+
+describe('RoomManager.addSystemMessage', () => {
+  it('сохраняет системное сообщение в историю комнаты (TDD §5.3)', () => {
+    vi.useFakeTimers({ now: 1789640030000 });
+    const manager = new RoomManager();
+    joinOk(manager, 'Мария');
+
+    const message = manager.addSystemMessage(ROOM_ID, 'joined', 'Мария');
+
+    expect(message).toEqual({
+      id: expect.stringMatching(UUID),
+      type: 'system',
+      ts: 1789640030000,
+      event: 'joined',
+      subjectName: 'Мария',
+    });
+    expect(historyOf(manager)).toEqual([message]);
+  });
+
+  it('системные и пользовательские сообщения хранятся в одной ленте по порядку', () => {
+    const manager = new RoomManager();
+    joinOk(manager, 'Мария');
+    manager.addSystemMessage(ROOM_ID, 'joined', 'Мария');
+    const alex = joinOk(manager, 'Алекс');
+    manager.addSystemMessage(ROOM_ID, 'joined', 'Алекс');
+    manager.addChatMessage(alex.id, 'Привет');
+    manager.leave(alex.id);
+    manager.addSystemMessage(ROOM_ID, 'left', 'Алекс');
+
+    const feed = historyOf(manager).map((m) => m.text ?? `${m.event}:${m.subjectName}`);
+    expect(feed).toEqual(['joined:Мария', 'joined:Алекс', 'Привет', 'left:Алекс']);
+  });
+
+  it('возвращает null и не создаёт комнату заново, если её уже нет', () => {
+    const manager = new RoomManager();
+    const maria = joinOk(manager, 'Мария');
+    manager.leave(maria.id);
+
+    expect(manager.addSystemMessage(ROOM_ID, 'left', 'Мария')).toBeNull();
+    expect(manager.rooms.has(ROOM_ID)).toBe(false);
+  });
+});
+
+describe('RoomManager.setMediaState', () => {
+  it('обновляет индикаторы участника и возвращает его', () => {
+    const manager = new RoomManager();
+    const maria = joinOk(manager, 'Мария');
+
+    expect(manager.setMediaState(maria.id, { audio: true, video: false })).toBe(maria);
+    expect(maria).toMatchObject({ audio: true, video: false });
+
+    manager.setMediaState(maria.id, { audio: false, video: true });
+    expect(maria).toMatchObject({ audio: false, video: true });
+  });
+
+  it('вошедший позже видит актуальное состояние в снимке', () => {
+    const manager = new RoomManager();
+    const maria = joinOk(manager, 'Мария');
+    manager.setMediaState(maria.id, { audio: true, video: true });
+
+    const { room, participant } = manager.join({ roomId: ROOM_ID, name: 'Алекс', socketId: 's2' });
+
+    expect(room.snapshot(participant.id).participants).toEqual([
+      { id: maria.id, name: 'Мария', audio: true, video: true },
+    ]);
+  });
+
+  it('берёт из состояния только audio и video', () => {
+    const manager = new RoomManager();
+    const maria = joinOk(manager, 'Мария');
+
+    manager.setMediaState(maria.id, { audio: true, video: true, id: 'x', name: 'Подмена' });
+
+    expect(maria).toMatchObject({ name: 'Мария', audio: true, video: true });
+    expect(manager.byParticipant.get(maria.id)).toBe(ROOM_ID);
+    expect(Object.keys(maria).sort()).toEqual(PARTICIPANT_FIELDS);
+  });
+
+  it('возвращает null и ничего не меняет, если участник не в комнате', () => {
+    const manager = new RoomManager();
+    joinOk(manager, 'Мария');
+    const alex = joinOk(manager, 'Алекс');
+    manager.leave(alex.id);
+
+    expect(manager.setMediaState(alex.id, { audio: true, video: true })).toBeNull();
+    expect(manager.setMediaState('unknown', { audio: true, video: true })).toBeNull();
+    expect(alex).toMatchObject({ audio: false, video: false });
+  });
+});
+
+describe('RoomManager.stats', () => {
+  it('считает комнаты и участников во всех комнатах', () => {
+    const manager = new RoomManager();
+    expect(manager.stats()).toEqual({ rooms: 0, participants: 0 });
+
+    const maria = joinOk(manager, 'Мария', 'room-a');
+    joinOk(manager, 'Алекс', 'room-a');
+    joinOk(manager, 'Пётр', 'room-b');
+    expect(manager.stats()).toEqual({ rooms: 2, participants: 3 });
+
+    manager.leave(maria.id);
+    expect(manager.stats()).toEqual({ rooms: 2, participants: 2 });
+  });
+
+  it('отказ ROOM_FULL не меняет счётчики', () => {
+    const manager = new RoomManager();
+    fillRoom(manager);
+
+    manager.join({ roomId: ROOM_ID, name: 'Пётр', socketId: 's5' });
+
+    expect(manager.stats()).toEqual({ rooms: 1, participants: MAX_PARTICIPANTS });
+  });
+
+  it('когда все вышли, комнат не остаётся', () => {
+    const manager = new RoomManager();
+    const participants = [...fillRoom(manager), joinOk(manager, 'Пётр', 'room-b')];
+
+    for (const participant of participants) manager.leave(participant.id);
+
+    expect(manager.stats()).toEqual({ rooms: 0, participants: 0 });
+  });
+});
+
+describe('RoomManager.toDTO', () => {
+  it('отдаёт id, name, audio и video без socketId и joinedAt', () => {
+    const manager = new RoomManager();
+    const maria = joinOk(manager, 'Мария');
+    manager.setMediaState(maria.id, { audio: true, video: false });
+
+    const dto = manager.toDTO(maria);
+
+    expect(dto).toEqual({ id: maria.id, name: 'Мария', audio: true, video: false });
+    expect(dto).not.toHaveProperty('socketId');
+    expect(dto).not.toHaveProperty('joinedAt');
+  });
+
+  it('возвращает новый объект: изменение DTO не затрагивает участника', () => {
+    const manager = new RoomManager();
+    const maria = joinOk(manager, 'Мария');
+
+    const dto = manager.toDTO(maria);
+    dto.name = 'Подмена';
+
+    expect(dto).not.toBe(maria);
+    expect(maria.name).toBe('Мария');
   });
 });

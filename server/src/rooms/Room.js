@@ -61,6 +61,14 @@ export class Room {
   }
 
   /**
+   * @param {string} participantId
+   * @returns {Participant | null}
+   */
+  get(participantId) {
+    return this.participants.get(participantId) ?? null;
+  }
+
+  /**
    * Добавляет участника в конец списка. Лимит участников проверяет `RoomManager`.
    * @param {Participant} participant
    */

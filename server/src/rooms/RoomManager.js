@@ -1,5 +1,5 @@
-// Реестр комнат в памяти процесса: атомарный вход с лимитом участников и удаление пустых комнат
-// (TDD §4.2.1–4.2.3, §5.2).
+// Реестр комнат в памяти процесса: атомарный вход с лимитом участников, удаление пустых комнат,
+// история чата и состояние индикаторов медиа (TDD §4.2.1–4.2.3, §5.2, §5.3).
 //
 // ИНВАРИАНТ (FR-7, TDD §4.2.2): методы RoomManager синхронны. Между проверкой лимита и вставкой
 // участника нет await, промисов и колбэков, поэтому Node.js не может начать второй join, пока
@@ -7,9 +7,11 @@
 // async-функции в rooms/**. Инвариант держится только в одном процессе: без cluster (TDD §13, R-3).
 import { randomUUID } from 'node:crypto';
 import { CHAT_HISTORY_LIMIT, ERROR_CODES, MAX_PARTICIPANTS } from '@vcr/shared';
-import { Room } from './Room.js';
+import { Room, toParticipantDTO } from './Room.js';
 
 /** @typedef {import('./Room.js').Participant} Participant */
+/** @typedef {import('@vcr/shared').ChatMessage} ChatMessage */
+/** @typedef {import('@vcr/shared').ParticipantDTO} ParticipantDTO */
 
 /**
  * @typedef {{ ok: true, room: Room, participant: Participant }
@@ -91,5 +93,90 @@ export class RoomManager {
     const roomDeleted = room.size === 0;
     if (roomDeleted) this.rooms.delete(roomId);
     return { room, participant, roomDeleted };
+  }
+
+  /**
+   * @param {string} participantId
+   * @returns {Room | null}  комната участника или `null`, если он не в комнате
+   */
+  getRoomOf(participantId) {
+    const roomId = this.byParticipant.get(participantId);
+    return roomId === undefined ? null : this.rooms.get(roomId);
+  }
+
+  /**
+   * Сохраняет пользовательское сообщение в историю комнаты автора (FR-21, FR-23). Время ставит
+   * сервер, имя автора копируется на момент отправки. Текст должен пройти `validateMessage`.
+   * @param {string} participantId
+   * @param {string} text
+   * @returns {ChatMessage | null}  `null`, если автор не в комнате
+   */
+  addChatMessage(participantId, text) {
+    const room = this.getRoomOf(participantId);
+    if (!room) return null;
+    const author = room.get(participantId);
+    return this.#pushMessage(room, {
+      type: 'user',
+      authorId: author.id,
+      authorName: author.name,
+      text,
+    });
+  }
+
+  /**
+   * Сохраняет системное сообщение о входе или выходе (FR-25). Оно остаётся в истории и видно
+   * тем, кто войдёт позже (TDD §5.3).
+   * @param {string} roomId
+   * @param {'joined' | 'left'} event
+   * @param {string} subjectName  имя вошедшего или вышедшего участника
+   * @returns {ChatMessage | null}  `null`, если комнаты уже нет
+   */
+  addSystemMessage(roomId, event, subjectName) {
+    const room = this.rooms.get(roomId);
+    if (!room) return null;
+    return this.#pushMessage(room, { type: 'system', event, subjectName });
+  }
+
+  /**
+   * Запоминает состояние индикаторов микрофона и камеры (FR-15, FR-16, FR-18): его получат
+   * в ack участники, которые войдут позже.
+   * @param {string} participantId
+   * @param {{ audio: boolean, video: boolean }} state
+   * @returns {Participant | null}  обновлённый участник или `null`, если он не в комнате
+   */
+  setMediaState(participantId, { audio, video }) {
+    const participant = this.getRoomOf(participantId)?.get(participantId);
+    if (!participant) return null;
+    participant.audio = audio;
+    participant.video = video;
+    return participant;
+  }
+
+  /**
+   * Счётчики для `/healthz` и интеграционных тестов (TDD §6.1, §11.3).
+   * @returns {{ rooms: number, participants: number }}
+   */
+  stats() {
+    return { rooms: this.rooms.size, participants: this.byParticipant.size };
+  }
+
+  /**
+   * Участник для отправки клиентам: без `socketId` и `joinedAt`.
+   * @param {Participant} participant
+   * @returns {ParticipantDTO}
+   */
+  toDTO(participant) {
+    return toParticipantDTO(participant);
+  }
+
+  /**
+   * @param {Room} room
+   * @param {Omit<ChatMessage, 'id' | 'ts'>} fields
+   * @returns {ChatMessage}
+   */
+  #pushMessage(room, fields) {
+    const message = { id: randomUUID(), ts: Date.now(), ...fields };
+    room.pushMessage(message);
+    return message;
   }
 }

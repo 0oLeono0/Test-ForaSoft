@@ -127,7 +127,7 @@ flowchart LR
     - Зависит от: 3.1.
     - _Requirements: FR-5, FR-7, FR-9, FR-30, FR-32, US-5, US-10, Design: 4.2.2, 4.2.3_
 
-  - [ ] 3.3 `RoomManager`: сообщения, состояние медиа, статистика — **0.5 д**
+  - [x] 3.3 `RoomManager`: сообщения, состояние медиа, статистика — **0.5 д**
     - `addChatMessage(participantId, text)` → `ChatMessage` с `type: 'user'` (`ts` сервера, `authorName` снимком); `addSystemMessage(roomId, event, subjectName)`.
     - `setMediaState(participantId, state)`; `getRoomOf(participantId)`; `stats()`; `toDTO(participant)` без `socketId`.
     - Unit-тесты: сообщения попадают в историю комнаты автора; системные сообщения сохраняются; `toDTO` не содержит `socketId`.
