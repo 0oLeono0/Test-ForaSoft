@@ -178,7 +178,7 @@ flowchart LR
     - Зависит от: 3.3, 3.4, 3.5, 4.3.
     - _Requirements: FR-1, FR-4…FR-9, FR-25, FR-27, FR-28, FR-29, FR-31, FR-32, US-4, US-5, US-10, US-11, Design: 4.2.2, 6.3, 6.4, 7.1, 7.3, 7.6, 8.1_
 
-  - [ ] 4.5 Обработчики `chat:send` и `media:state` — **0.5 д**
+  - [x] 4.5 Обработчики `chat:send` и `media:state` — **0.5 д**
     - `chat:send`: только в комнате → rate limit `chat` → `validateMessage` → `addChatMessage` → ack `{ ok: true, message }` + broadcast `chat:message` всей комнате.
     - `media:state`: guard → rate limit `media` (молча) → `setMediaState` → `participant:media` комнате, кроме отправителя.
     - Зависит от: 4.4.

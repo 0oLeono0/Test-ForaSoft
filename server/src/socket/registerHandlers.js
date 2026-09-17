@@ -2,6 +2,8 @@
 // socket.data, таблица «событие → обработчик» и обёртка, которая превращает исключение в ack
 // INTERNAL_ERROR и запись в лог. Без обёртки исключение в обработчике Socket.io роняет процесс.
 import { CLIENT_EVENTS, ERROR_CODES, ERROR_MESSAGES } from '@vcr/shared';
+import { handleChatSend } from './handlers/chat.js';
+import { handleMediaState } from './handlers/media.js';
 import { handleDisconnect, handleJoin, handleLeave } from './handlers/room.js';
 
 /**
@@ -31,6 +33,8 @@ import { handleDisconnect, handleJoin, handleLeave } from './handlers/room.js';
 const EVENT_HANDLERS = Object.freeze({
   [CLIENT_EVENTS.ROOM_JOIN]: handleJoin,
   [CLIENT_EVENTS.ROOM_LEAVE]: handleLeave,
+  [CLIENT_EVENTS.CHAT_SEND]: handleChatSend,
+  [CLIENT_EVENTS.MEDIA_STATE]: handleMediaState,
 });
 
 /**
