@@ -5,6 +5,7 @@ import {
   CLIENT_OPTIONS,
   clearReceivedEvents,
   closeTestResources,
+  connectAndJoin,
   connectClient,
   flushEvents,
   joinAs,
@@ -78,6 +79,19 @@ describe('request и joinAs', () => {
 
     expect(ack).toMatchObject({ ok: true, self: { name: 'Мария' }, participants: [] });
     expect(server.roomManager.stats()).toEqual({ rooms: 1, participants: 1 });
+  });
+
+  it('connectAndJoin подключает нового клиента с заданными параметрами и входит им в комнату', async () => {
+    const server = await startTestServer();
+
+    const maria = await connectAndJoin(server, ROOM_ID, 'Мария');
+    const alex = await connectAndJoin(server, ROOM_ID, 'Алекс', { transports: ['websocket'] });
+
+    expect(maria.client).not.toBe(alex.client);
+    expect(alex.client.connected).toBe(true);
+    expect(alex.client.io.engine.transport.name).toBe('websocket');
+    expect(alex.id).toBe(alex.ack.self.id);
+    expect(alex.ack.participants).toEqual([maria.ack.self]);
   });
 
   it('joinAs: неудачный вход — исключение с кодом ошибки', async () => {

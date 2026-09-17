@@ -139,6 +139,20 @@ export async function joinAs(client, roomId, name) {
 }
 
 /**
+ * Новый клиент, вошедший в комнату: участник для подготовки сценария.
+ * @param {TestServer} server
+ * @param {string} roomId
+ * @param {string} name
+ * @param {Parameters<typeof connectClient>[1]} [options]  параметры клиента, как у connectClient
+ * @returns {Promise<{ client: ClientSocket, ack: any, id: string }>}  `id` — participantId
+ */
+export async function connectAndJoin(server, roomId, name, options = {}) {
+  const client = await connectClient(server, options);
+  const ack = await joinAs(client, roomId, name);
+  return { client, ack, id: ack.self.id };
+}
+
+/**
  * Ждёт событие, пришедшее **после** вызова: ожидание создаётся до действия, которое его вызывает.
  * @param {ClientSocket} client
  * @param {string} event
