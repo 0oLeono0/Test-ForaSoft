@@ -157,7 +157,7 @@ flowchart LR
     - Зависит от: 1.3.
     - _Requirements: FR-34, Design: 10.5, 12.3_
 
-  - [ ] 4.2 Express-приложение: безопасность, статика, `/healthz` — **0.5 д**
+  - [x] 4.2 Express-приложение: безопасность, статика, `/healthz` — **0.5 д**
     - `createApp(config, deps)`: `helmet` с CSP из §10.3, `Permissions-Policy`, `Referrer-Policy: no-referrer`, `express.static` с `immutable` для `/assets`, `GET /healthz` (`status`, `rooms`, `participants`, `uptimeSec`, `version`), SPA fallback.
     - Тесты на `supertest`: заголовки CSP и Permissions-Policy, `/healthz`, fallback на `/room/abc123`.
     - Зависит от: 4.1.
