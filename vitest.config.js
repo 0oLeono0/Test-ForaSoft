@@ -35,6 +35,8 @@ export default defineConfig({
           environment: 'jsdom',
           include: ['client/src/**/*.test.{js,jsx}'],
           setupFiles: ['client/src/test/setup.js'],
+          // Часовой пояс формата HH:MM (FR-22) фиксируется, иначе тест зависит от машины.
+          env: { TZ: 'Europe/Moscow' },
         },
       },
     ],

@@ -227,7 +227,7 @@ flowchart LR
     - Зависит от: 1.4.
     - _Requirements: FR-11, PRD §6, Design: 3.3, 4.1.1, 4.1.5, 12.1_
 
-  - [ ] 6.2 `sessionName` и утилиты — **0.5 д**
+  - [x] 6.2 `sessionName` и утилиты — **0.5 д**
     - `state/sessionName.js`: переменная модуля `get`/`set`/`clear`, **без** storage и `history.state`.
     - `utils/formatTime.js` (`HH:MM`, `Intl.DateTimeFormat('ru-RU')`), `utils/gridLayout.js` (1–4 → колонки и ряды), `utils/clipboard.js` (`navigator.clipboard` + fallback через выделенный `input`), `utils/mediaErrors.js` (`DOMException.name` → статус трека `ok` / `DENIED` / `NOT_FOUND` / `BUSY` / `ERROR`; константы клиентских кодов из §8.2).
     - Unit-тесты для каждой утилиты (TZ фиксируется через env в конфиге Vitest).
