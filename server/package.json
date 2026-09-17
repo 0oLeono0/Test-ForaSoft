@@ -5,6 +5,10 @@
   "description": "Сигнальный сервер: Express, Socket.io, комнаты в памяти",
   "type": "module",
   "dependencies": {
-    "@vcr/shared": "^0.1.0"
+    "@vcr/shared": "^0.1.0",
+    "express": "^4.22.3",
+    "helmet": "^8.3.0",
+    "pino": "^10.3.1",
+    "socket.io": "^4.8.3"
   }
 }

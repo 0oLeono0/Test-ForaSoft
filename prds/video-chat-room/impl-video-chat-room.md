@@ -146,31 +146,31 @@ flowchart LR
     - Зависит от: 2.2, 2.4.
     - _Requirements: FR-10, FR-38, Design: 4.2.1, 6.2, 8.1_
 
-- [ ] 4. Сервер: HTTP, Socket.io и обработчики событий
+- [x] 4. Сервер: HTTP, Socket.io и обработчики событий
   - Сетевой слой поверх доменной логики: Express, Socket.io, обработчики `room`/`chat`/`media`/`signal`.
   - _Requirements: FR-1, FR-4…FR-10, FR-15, FR-16, FR-21…FR-31, FR-35, FR-40, Design: 4.2, 6.1–6.5, 7.1–7.6, 10, 12.3, 12.5_
 
-  - [ ] 4.1 Конфигурация и логгер — **0.5 д**
+  - [x] 4.1 Конфигурация и логгер — **0.5 д**
     - `config.js`: чтение и валидация env (`PORT`, `HOST`, `SSL_CERT_PATH`, `SSL_KEY_PATH`, `STUN_URLS` → массив `{ urls }`, `CHAT_HISTORY_LIMIT`, `LOG_LEVEL`, `CLIENT_DIST_DIR`), замороженный объект конфигурации, понятная ошибка при неверных значениях.
     - `logger.js`: pino; `redact` для `text`, `sdp`, `candidate`; имя — только на уровне `debug`.
     - Unit-тесты `config` (дефолты, парсинг `STUN_URLS`, ошибка при одном из двух SSL-путей).
     - Зависит от: 1.3.
     - _Requirements: FR-34, Design: 10.5, 12.3_
 
-  - [ ] 4.2 Express-приложение: безопасность, статика, `/healthz` — **0.5 д**
+  - [x] 4.2 Express-приложение: безопасность, статика, `/healthz` — **0.5 д**
     - `createApp(config, deps)`: `helmet` с CSP из §10.3, `Permissions-Policy`, `Referrer-Policy: no-referrer`, `express.static` с `immutable` для `/assets`, `GET /healthz` (`status`, `rooms`, `participants`, `uptimeSec`, `version`), SPA fallback.
     - Тесты на `supertest`: заголовки CSP и Permissions-Policy, `/healthz`, fallback на `/room/abc123`.
     - Зависит от: 4.1.
     - _Requirements: FR-39, Design: 6.1, 10.2, 10.3_
 
-  - [ ] 4.3 Bootstrap сервера и Socket.io — **0.5 д**
+  - [x] 4.3 Bootstrap сервера и Socket.io — **0.5 д**
     - `index.js`: HTTP или HTTPS в зависимости от сертификатов; `new Server(httpServer, …)` с `pingInterval 5000`, `pingTimeout 10000`, `maxHttpBufferSize 64 KB`, без `connectionStateRecovery`.
     - Экспорт `createServer(config)` → `{ httpServer, io, roomManager, close() }` (нужен интеграционным тестам); graceful shutdown по `SIGINT`/`SIGTERM` с таймаутом 5 с.
     - Скрипт `server:dev` = `node --watch src/index.js`.
     - Зависит от: 3.2, 4.2.
     - _Requirements: FR-31, FR-35, Design: 4.2.1, 6.2, 12.1, 12.5_
 
-  - [ ] 4.4 Обработчики `room:join`, `room:leave`, `disconnect` — **1 д**
+  - [x] 4.4 Обработчики `room:join`, `room:leave`, `disconnect` — **1 д**
     - `registerHandlers(io, deps)`: `socket.data = { participantId: null, roomId: null }`, обёртка обработчиков try/catch → `INTERNAL_ERROR`.
     - `room:join`: guard → rate limit → `isValidRoomId` / `validateName` → `ALREADY_IN_ROOM` → `RoomManager.join` → синхронный `socket.join` → broadcast `participant:joined` + системное `joined` → ack `{ ok: true, self, participants, messages, iceServers, limits }` (снимок без себя).
     - `room:leave` и `disconnect` → общий `handleLeave`: `participant:left` + системное `left` (не «соединение потеряно»), `rateLimiter.forget`.
@@ -178,13 +178,13 @@ flowchart LR
     - Зависит от: 3.3, 3.4, 3.5, 4.3.
     - _Requirements: FR-1, FR-4…FR-9, FR-25, FR-27, FR-28, FR-29, FR-31, FR-32, US-4, US-5, US-10, US-11, Design: 4.2.2, 6.3, 6.4, 7.1, 7.3, 7.6, 8.1_
 
-  - [ ] 4.5 Обработчики `chat:send` и `media:state` — **0.5 д**
+  - [x] 4.5 Обработчики `chat:send` и `media:state` — **0.5 д**
     - `chat:send`: только в комнате → rate limit `chat` → `validateMessage` → `addChatMessage` → ack `{ ok: true, message }` + broadcast `chat:message` всей комнате.
     - `media:state`: guard → rate limit `media` (молча) → `setMediaState` → `participant:media` комнате, кроме отправителя.
     - Зависит от: 4.4.
     - _Requirements: FR-15, FR-16, FR-18, FR-21, FR-22, FR-24, FR-40, US-7, US-8, Design: 6.3, 6.4, 7.4, 7.5_
 
-  - [ ] 4.6 Обработчик `signal` (relay) — **0.5 д**
+  - [x] 4.6 Обработчик `signal` (relay) — **0.5 д**
     - Guard → rate limit `signal` → получатель `to` должен быть в **той же** комнате → `io.to(target.socketId).emit('signal', { from: socket.data.participantId, data })`; иначе `signal:error` (`PEER_NOT_FOUND`, `INVALID_SIGNAL`, `RATE_LIMITED`).
     - Поле `from` из payload игнорируется, его проставляет сервер.
     - Зависит от: 4.4.

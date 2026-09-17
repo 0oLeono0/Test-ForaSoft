@@ -13,6 +13,7 @@
     "client"
   ],
   "scripts": {
+    "server:dev": "node --watch server/src/index.js",
     "lint": "eslint .",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
@@ -30,6 +31,7 @@
     "globals": "^17.12.0",
     "jsdom": "^26.1.0",
     "prettier": "^3.9.7",
+    "supertest": "^7.2.2",
     "vitest": "~3.2.7"
   }
 }
