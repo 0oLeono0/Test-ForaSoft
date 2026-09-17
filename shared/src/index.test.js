@@ -1,9 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import * as constants from './constants.js';
 import * as errors from './errors.js';
+import * as events from './events.js';
 import * as shared from './index.js';
 
-const MODULES = { constants, errors };
+const MODULES = { constants, errors, events };
 
 describe('@vcr/shared: barrel-экспорт', () => {
   it.each(Object.entries(MODULES))('реэкспортирует всё из %s.js', (_name, module) => {

@@ -89,7 +89,7 @@ flowchart LR
     - Зависит от: 1.4.
     - _Requirements: FR-7, FR-8, FR-38, FR-40, Design: 4.3, 8.1_
 
-  - [ ] 2.2 Словарь событий и JSDoc-описания DTO — **0.25 д**
+  - [x] 2.2 Словарь событий и JSDoc-описания DTO — **0.25 д**
     - `events.js`: константы имён событий `CLIENT_EVENTS` (`room:join`, `room:leave`, `chat:send`, `media:state`, `signal`) и `SERVER_EVENTS` (`participant:joined` / `left` / `media`, `chat:message`, `signal`, `signal:error`).
     - JSDoc `@typedef` для `ParticipantDTO`, `ChatMessage`, `SignalData` и формата ack из §5.2, §6.2, §6.3 — справка для IDE и ревью; barrel-экспорт в `index.js`.
     - Unit-тест: имена событий уникальны и совпадают с таблицами §6.3–6.4.
