@@ -49,31 +49,31 @@ flowchart LR
 
 ## Задачи
 
-- [ ] 1. Каркас монорепозитория на JavaScript
+- [x] 1. Каркас монорепозитория на JavaScript
   - npm workspaces, ESM, линт, тестовый раннер и подключение `@vcr/shared` к серверу и клиенту.
   - _Requirements: PRD §7 (стек), Design: 1.2, 3.3, 3.4, 12.1_
 
-  - [ ] 1.1 Инициализировать npm workspaces — **0.5 д**
+  - [x] 1.1 Инициализировать npm workspaces — **0.5 д**
     - Корневой `package.json` с workspaces `shared`, `server`, `client`; `engines.node >= 20`; `.nvmrc`.
     - `"type": "module"` во всех пакетах (ESM в Node и в Vite).
     - `.gitignore`: `node_modules`, `dist`, `certs`, `coverage`, `playwright-report`, `test-results`.
     - DoD: `npm install` из корня ставит зависимости всех пакетов; `node server/src/index.js` с заглушкой запускается.
     - _Requirements: PRD §7, Design: 3.3, 3.4_
 
-  - [ ] 1.2 Настроить ESLint, Prettier и скрипты проверки — **0.5 д**
+  - [x] 1.2 Настроить ESLint, Prettier и скрипты проверки — **0.5 д**
     - ESLint flat config: `@eslint/js` recommended, `eslint-plugin-react`, `eslint-plugin-react-hooks`, `globals` (node / browser по пакетам).
     - Правила безопасности: `react/no-danger`, `no-restricted-properties` для `innerHTML`/`outerHTML`.
     - Корневые скрипты: `lint`, `format`, `format:check`.
     - DoD: специально добавленный `dangerouslySetInnerHTML` в тестовом файле даёт ошибку линта (файл потом удалить).
     - _Requirements: FR-39, Design: 3.4, 10.3_
 
-  - [ ] 1.3 Настроить Vitest workspace и пороги покрытия — **0.5 д**
+  - [x] 1.3 Настроить Vitest workspace и пороги покрытия — **0.5 д**
     - Корневой `vitest.config.js` с `test.projects`: `shared` (node), `server` (node), `client` (jsdom + `@testing-library/jest-dom`).
     - `@vitest/coverage-v8` с порогами из §11.7 для каждого пакета; скрипты `test`, `test:watch`, `test:coverage`.
     - По одному smoke-тесту на пакет.
     - _Requirements: —, Design: 11.1, 11.7_
 
-  - [ ] 1.4 Подключить `@vcr/shared` к серверу и клиенту — **0.25 д**
+  - [x] 1.4 Подключить `@vcr/shared` к серверу и клиенту — **0.25 д**
     - `shared/package.json`: `"type": "module"`, `"exports": "./src/index.js"` (сборка не нужна — это обычные ES-модули).
     - Workspace-зависимость `@vcr/shared` в `server` и `client`; смоук-импорт заглушки (`export const MAX_PARTICIPANTS = 4`) из Node, из Vite (dev и `vite build`) и из Vitest.
     - Зависит от: 1.1.

@@ -1,0 +1,8 @@
+{
+  "name": "@vcr/shared",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Общие константы, контракты событий и валидация для клиента и сервера",
+  "type": "module",
+  "exports": "./src/index.js"
+}
