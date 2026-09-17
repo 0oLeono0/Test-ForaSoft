@@ -163,7 +163,7 @@ flowchart LR
     - Зависит от: 4.1.
     - _Requirements: FR-39, Design: 6.1, 10.2, 10.3_
 
-  - [ ] 4.3 Bootstrap сервера и Socket.io — **0.5 д**
+  - [x] 4.3 Bootstrap сервера и Socket.io — **0.5 д**
     - `index.js`: HTTP или HTTPS в зависимости от сертификатов; `new Server(httpServer, …)` с `pingInterval 5000`, `pingTimeout 10000`, `maxHttpBufferSize 64 KB`, без `connectionStateRecovery`.
     - Экспорт `createServer(config)` → `{ httpServer, io, roomManager, close() }` (нужен интеграционным тестам); graceful shutdown по `SIGINT`/`SIGTERM` с таймаутом 5 с.
     - Скрипт `server:dev` = `node --watch src/index.js`.

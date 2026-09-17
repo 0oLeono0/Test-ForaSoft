@@ -13,6 +13,7 @@
     "client"
   ],
   "scripts": {
+    "server:dev": "node --watch server/src/index.js",
     "lint": "eslint .",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
