@@ -1,0 +1,57 @@
+/* Лента сообщений: прокручивается сама, последнее сообщение всегда видно (FR-23). */
+
+.message-list {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  margin: 0;
+  padding: 0 var(--space-4) var(--space-3);
+  list-style: none;
+}
+
+.message-list--empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.message-list__empty {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: var(--font-size-sm);
+}
+
+.message {
+  margin-bottom: var(--space-3);
+}
+
+.message__meta {
+  display: flex;
+  gap: var(--space-2);
+  align-items: baseline;
+  margin: 0 0 var(--space-1);
+}
+
+.message__author {
+  font-weight: 600;
+  /* Длинное имя без пробелов не должно растягивать панель. */
+  overflow-wrap: anywhere;
+}
+
+.message__time {
+  color: var(--color-text-muted);
+  font-size: var(--font-size-sm);
+}
+
+.message__text {
+  margin: 0;
+  /* Переводы строк и пробелы сохраняются, текст переносится (TDD §4.1.5). */
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.message--system {
+  color: var(--color-text-muted);
+  font-size: var(--font-size-sm);
+  font-style: italic;
+}

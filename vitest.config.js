@@ -27,11 +27,16 @@ export default defineConfig({
         },
       },
       {
+        // JSX собирается esbuild-ом Vite: отдельный плагин React в тестах не нужен,
+        // Fast Refresh работает только в dev-сервере (client/vite.config.js).
+        esbuild: { jsx: 'automatic' },
         test: {
           name: 'client',
           environment: 'jsdom',
           include: ['client/src/**/*.test.{js,jsx}'],
           setupFiles: ['client/src/test/setup.js'],
+          // Часовой пояс формата HH:MM (FR-22) фиксируется, иначе тест зависит от машины.
+          env: { TZ: 'Europe/Moscow' },
         },
       },
     ],

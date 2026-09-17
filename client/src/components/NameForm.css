@@ -1,0 +1,45 @@
+/* Форма имени: одна колонка, подсказка под полем (TDD §4.1.5). */
+
+.name-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  width: 100%;
+  max-width: 360px;
+}
+
+.name-form__label {
+  color: var(--color-text-muted);
+  font-size: var(--font-size-sm);
+}
+
+.name-form__input {
+  padding: var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+}
+
+.name-form__input[aria-invalid='true'] {
+  border-color: var(--color-danger);
+}
+
+.name-form__hint {
+  margin: 0;
+  color: var(--color-danger);
+  font-size: var(--font-size-sm);
+}
+
+.name-form__submit {
+  margin-top: var(--space-2);
+  padding: var(--space-3) var(--space-4);
+  border: none;
+  border-radius: var(--radius-md);
+  background: var(--color-accent);
+  color: var(--color-accent-text);
+}
+
+.name-form__submit:disabled {
+  opacity: 0.6;
+  cursor: progress;
+}

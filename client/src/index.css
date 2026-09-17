@@ -1,0 +1,74 @@
+/* Базовые переменные и сброс. Оформление оценивается по принципу «работает и понятно» (PRD §6). */
+
+:root {
+  color-scheme: dark;
+
+  --color-bg: #12151a;
+  --color-surface: #1b1f27;
+  --color-surface-muted: #232936;
+  --color-border: #2f3643;
+  --color-text: #e8ecf3;
+  --color-text-muted: #98a2b3;
+  --color-accent: #3b82f6;
+  --color-accent-text: #ffffff;
+  --color-danger: #ef4444;
+  --color-focus: #7dd3fc;
+
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-6: 24px;
+  --space-8: 32px;
+
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+
+  /* Правая панель и минимальная ширина экрана: PRD §6, TDD §4.1.5. */
+  --sidebar-width: 320px;
+  --app-min-width: 1024px;
+
+  --font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji';
+  --font-size-sm: 13px;
+  --font-size-md: 15px;
+  --font-size-lg: 20px;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-family: var(--font-family);
+  font-size: var(--font-size-md);
+  line-height: 1.45;
+}
+
+button {
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+}
+
+input,
+textarea {
+  font: inherit;
+  color: inherit;
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+}

@@ -215,11 +215,11 @@ flowchart LR
     - Зависит от: 4.5, 4.6, 5.1.
     - _Requirements: FR-10, FR-15, FR-16, FR-38, FR-40, Design: 8.1, 10.1, 10.4, 11.3_
 
-- [ ] 6. Клиент: каркас приложения и UI-компоненты
+- [x] 6. Клиент: каркас приложения и UI-компоненты
   - Vite + React, роутинг, reducer и «глупые» компоненты: работают на моках, от сети и WebRTC не зависят.
   - _Requirements: FR-1…FR-3, FR-8, FR-11, FR-12, FR-16, FR-18, FR-21…FR-28, FR-35…FR-39, PRD §6, Design: 4.1.1, 4.1.5, 4.1.6, 5.4, 7.5, 8.2_
 
-  - [ ] 6.1 Каркас клиента: Vite, роутинг, раскладка — **0.5 д**
+  - [x] 6.1 Каркас клиента: Vite, роутинг, раскладка — **0.5 д**
     - `vite.config.js`: `@vitejs/plugin-react`, HTTPS из `certs/` (если есть), `server.host: true`, proxy `/socket.io` → `:3000` c `ws: true` (сервер в dev слушает порт по умолчанию, env-префиксы в скриптах не нужны — одинаково в Windows и Unix).
     - `App.jsx`: маршруты `/`, `/room/:roomId`, `*` → `/`; пустые `HomePage` и `RoomPage`.
     - `RoomLayout`: область сетки + правая панель 320px, `min-width: 1024px`; базовые CSS-переменные.
@@ -227,14 +227,14 @@ flowchart LR
     - Зависит от: 1.4.
     - _Requirements: FR-11, PRD §6, Design: 3.3, 4.1.1, 4.1.5, 12.1_
 
-  - [ ] 6.2 `sessionName` и утилиты — **0.5 д**
+  - [x] 6.2 `sessionName` и утилиты — **0.5 д**
     - `state/sessionName.js`: переменная модуля `get`/`set`/`clear`, **без** storage и `history.state`.
     - `utils/formatTime.js` (`HH:MM`, `Intl.DateTimeFormat('ru-RU')`), `utils/gridLayout.js` (1–4 → колонки и ряды), `utils/clipboard.js` (`navigator.clipboard` + fallback через выделенный `input`), `utils/mediaErrors.js` (`DOMException.name` → статус трека `ok` / `DENIED` / `NOT_FOUND` / `BUSY` / `ERROR`; константы клиентских кодов из §8.2).
     - Unit-тесты для каждой утилиты (TZ фиксируется через env в конфиге Vitest).
     - Зависит от: 6.1.
     - _Requirements: FR-3, FR-22, FR-28, Design: 4.1.4, 4.1.5, 5.4, 8.2_
 
-  - [ ] 6.3 `roomReducer` и контекст комнаты — **0.5 д**
+  - [x] 6.3 `roomReducer` и контекст комнаты — **0.5 д**
     - `initialState` и список действий из §4.1.6 как константы `ACTIONS` (без строковых литералов в компонентах); неизвестное действие в `default` выбрасывает ошибку.
     - Дедупликация `CHAT_MESSAGE` по `id`, ограничение истории `CHAT_HISTORY_LIMIT`, `PARTICIPANT_LEFT` удаляет и участника, и `links[peerId]`.
     - `RoomContext` (state + dispatch + доступ к `RoomSession`).
@@ -242,21 +242,21 @@ flowchart LR
     - Зависит от: 2.2, 6.1.
     - _Requirements: FR-23, FR-26, FR-30, Design: 4.1.6_
 
-  - [ ] 6.4 `NameForm` и `HomePage` — **0.5 д**
+  - [x] 6.4 `NameForm` и `HomePage` — **0.5 д**
     - `NameForm`: `maxLength=30`, `validateName` из `shared`, подсказка под полем, блокировка кнопки при `busy`, отправка по Enter.
     - `HomePage`: «Создать комнату» → `nanoid(10)` → `sessionName.set` → `navigate('/room/:id')`.
     - Компонентные тесты: пустое и пробельное имя → подсказка, переход не происходит; недопустимые символы → подсказка; валидное имя → вызван `navigate` с корректным id.
     - Зависит от: 2.3, 6.2.
     - _Requirements: FR-1, FR-2, FR-38, US-1, US-2, Design: 4.1.1, 4.1.5, 7.1_
 
-  - [ ] 6.5 `StatusScreen` и `Toasts` — **0.5 д**
+  - [x] 6.5 `StatusScreen` и `Toasts` — **0.5 д**
     - `StatusScreen` для `roomFull` («Комната заполнена» + «Повторить вход»), `serverUnavailable` («Сервер недоступен» + «Повторить»), `unsupported`, `insecureContext`, `connectionLost` («Войти заново»), `joinError`/`INVALID_ROOM_ID` («На главную»).
     - `Toasts`: очередь, автоскрытие, `role="status"`.
     - Компонентные тесты: текст и действие для каждого состояния.
     - Зависит от: 2.1, 6.1.
     - _Requirements: FR-8, FR-33, FR-35, FR-36, US-5, US-12, US-13, Design: 4.1.5, 8.1, 8.2_
 
-  - [ ] 6.6 `ChatPanel`: лента, ввод, автопрокрутка — **1 д**
+  - [x] 6.6 `ChatPanel`: лента, ввод, автопрокрутка — **1 д**
     - `MessageList`: пользовательские и системные сообщения («Имя присоединился(-ась)» / «покинул(а) комнату»), автор и `HH:MM`, рендер **только** текстовыми узлами, `white-space: pre-wrap`.
     - `MessageInput`: запрет пустой отправки, `maxLength` из `limits`, счётчик, Enter — отправить, Shift+Enter — перенос; текст сохраняется при ошибке ack.
     - `useAutoScroll`: прокрутка к последнему сообщению при каждом новом сообщении — своём, чужом, системном (US-8, FR-23).
@@ -264,14 +264,14 @@ flowchart LR
     - Зависит от: 6.2, 6.3.
     - _Requirements: FR-21, FR-22, FR-23, FR-24, FR-25, FR-39, US-8, US-9, Design: 4.1.5, 7.5, 10.3, 14 (Q-6)_
 
-  - [ ] 6.7 `ParticipantList` и `ControlsBar` — **0.5 д**
+  - [x] 6.7 `ParticipantList` и `ControlsBar` — **0.5 д**
     - `ParticipantList`: имена в порядке входа, «(Вы)» у себя, иконки выключенного микрофона и камеры; ключи по `id`.
     - `ControlsBar`: микрофон и камера (`aria-pressed`, недоступны при `NOT_FOUND` с подсказкой), «Скопировать ссылку» (`clipboard` + toast), «Выйти».
     - Компонентные тесты: одинаковые имена отображаются оба; нажатия вызывают колбэки; toast после копирования.
     - Зависит от: 6.2, 6.5.
     - _Requirements: FR-3, FR-15, FR-17, FR-26, FR-27, FR-30, US-3, US-7, US-9, Design: 4.1.5_
 
-  - [ ] 6.8 `VideoTile`, `VideoGrid`, `useMediaElement` — **1 д**
+  - [x] 6.8 `VideoTile`, `VideoGrid`, `useMediaElement` — **1 д**
     - `useMediaElement(stream)`: привязка `srcObject`, вызов `play()`, отчёт о `NotAllowedError` (для autoplay, задача 8.6), очистка при размонтировании.
     - `VideoTile`: `<video autoPlay playsInline>`, оверлей имени, иконка перечёркнутого микрофона, силуэт + имя при `video=false`, бейдж «Нет медиасоединения» при `linkStatus='failed'`; self — `muted`, зеркально, подпись «Вы», своя рамка.
     - `VideoGrid`: раскладка по `gridLayout`, self первой; плитки 16:9, `object-fit: cover`.
