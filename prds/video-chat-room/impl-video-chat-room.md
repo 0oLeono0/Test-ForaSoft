@@ -119,7 +119,7 @@ flowchart LR
     - Зависит от: 2.2.
     - _Requirements: FR-9, FR-23, FR-26, Design: 4.2.1, 5.2_
 
-  - [ ] 3.2 `RoomManager.join` / `leave`: атомарный лимит и жизненный цикл — **1 д**
+  - [x] 3.2 `RoomManager.join` / `leave`: атомарный лимит и жизненный цикл — **1 д**
     - `join()` **синхронный** (возвращает `JoinOutcome`, не `Promise`): создание комнаты при отсутствии, проверка `size >= MAX_PARTICIPANTS` → `ROOM_FULL`, `participantId = crypto.randomUUID()`, индекс `byParticipant`.
     - `leave(participantId)` идемпотентный → `{ room, participant, roomDeleted } | null`; удаление пустой комнаты вместе с историей.
     - Комментарий-инвариант «без await между проверкой и вставкой» + override ESLint для `rooms/**`: `no-restricted-syntax` запрещает `AwaitExpression` и async-функции.
