@@ -249,7 +249,7 @@ flowchart LR
     - Зависит от: 2.3, 6.2.
     - _Requirements: FR-1, FR-2, FR-38, US-1, US-2, Design: 4.1.1, 4.1.5, 7.1_
 
-  - [ ] 6.5 `StatusScreen` и `Toasts` — **0.5 д**
+  - [x] 6.5 `StatusScreen` и `Toasts` — **0.5 д**
     - `StatusScreen` для `roomFull` («Комната заполнена» + «Повторить вход»), `serverUnavailable` («Сервер недоступен» + «Повторить»), `unsupported`, `insecureContext`, `connectionLost` («Войти заново»), `joinError`/`INVALID_ROOM_ID` («На главную»).
     - `Toasts`: очередь, автоскрытие, `role="status"`.
     - Компонентные тесты: текст и действие для каждого состояния.

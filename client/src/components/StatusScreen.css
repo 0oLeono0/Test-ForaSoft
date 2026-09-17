@@ -1,0 +1,36 @@
+/* Полноэкранное состояние вместо комнаты: заголовок, пояснение и одно действие (TDD §4.1.5). */
+
+.status-screen {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-3);
+  min-height: 100%;
+  padding: var(--space-8) var(--space-4);
+  text-align: center;
+}
+
+.status-screen__title {
+  margin: 0;
+  font-size: var(--font-size-lg);
+}
+
+.status-screen__description {
+  max-width: 480px;
+  margin: 0;
+  color: var(--color-text-muted);
+}
+
+.status-screen__link {
+  color: var(--color-accent);
+}
+
+.status-screen__action {
+  margin-top: var(--space-2);
+  padding: var(--space-3) var(--space-4);
+  border: none;
+  border-radius: var(--radius-md);
+  background: var(--color-accent);
+  color: var(--color-accent-text);
+}
