@@ -83,7 +83,7 @@ flowchart LR
   - Единый источник продуктовых констант, имён событий, описаний DTO и правил валидации для клиента и сервера.
   - _Requirements: FR-1, FR-7, FR-24, FR-30, FR-38, FR-39, FR-40, Design: 4.3, 5.2, 6.2, 6.3, 8.1_
 
-  - [ ] 2.1 Константы и коды ошибок — **0.25 д**
+  - [x] 2.1 Константы и коды ошибок — **0.25 д**
     - `constants.js`: `MAX_PARTICIPANTS`, `NAME_MAX_LENGTH`, `MESSAGE_MAX_LENGTH`, `CHAT_HISTORY_LIMIT`, `ROOM_ID_PATTERN`, `NAME_ALLOWED_CHARS`, `NAME_HAS_ALNUM`.
     - `errors.js`: `ERROR_CODES` (12 кодов из §8.1, `Object.freeze`) и `ERROR_MESSAGES` с русскими текстами для каждого кода; тест, что у каждого кода есть текст.
     - Зависит от: 1.4.

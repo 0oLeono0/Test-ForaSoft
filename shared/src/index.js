@@ -1,2 +1,3 @@
-// Заглушка barrel-экспорта: константы переедут в constants.js в задаче 2.1.
-export const MAX_PARTICIPANTS = 4;
+// Barrel-экспорт @vcr/shared: клиент и сервер импортируют всё из '@vcr/shared'.
+export * from './constants.js';
+export * from './errors.js';
