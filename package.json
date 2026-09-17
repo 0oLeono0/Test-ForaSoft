@@ -5,7 +5,7 @@
   "description": "Видеочат-комната до 4 участников: WebRTC mesh, Socket.io, React",
   "type": "module",
   "engines": {
-    "node": ">=20"
+    "node": ">=20.9.0"
   },
   "workspaces": [
     "shared",
@@ -28,7 +28,7 @@
     "eslint-plugin-react": "^7.37.5",
     "eslint-plugin-react-hooks": "^7.1.1",
     "globals": "^17.12.0",
-    "jsdom": "^29.1.1",
+    "jsdom": "^26.1.0",
     "prettier": "^3.9.7",
     "vitest": "~3.2.7"
   }
