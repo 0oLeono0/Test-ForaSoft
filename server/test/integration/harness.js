@@ -226,6 +226,34 @@ export function payloadsOf(client, event) {
 }
 
 /**
+ * Отключает клиента и ждёт, пока сервер обработает `disconnect`: к этому моменту участник уже
+ * вышел из комнаты, даже если сообщить об этом некому. Обработчик приложения подписан на
+ * `disconnect` раньше, поэтому выполняется до слушателя стенда.
+ * @param {ClientSocket} client  подключённый клиент
+ * @param {'disconnect' | 'transport'} [mode]  `disconnect` — `socket.disconnect()` клиента;
+ *   `transport` — соединение закрывается без пакета Socket.io, как при закрытии вкладки
+ * @returns {Promise<string>}  причина отключения, которую получил сервер
+ */
+export async function disconnectClient(client, mode = 'disconnect') {
+  const serverSocket = stateOf(client).server.io.sockets.sockets.get(client.id);
+  if (!serverSocket) throw new Error('Клиент не подключён к серверу');
+
+  const disconnected = new Promise((resolve, reject) => {
+    const timer = setTimeout(
+      () => reject(new Error(`Сервер не обработал отключение за ${WAIT_TIMEOUT_MS} мс`)),
+      WAIT_TIMEOUT_MS,
+    );
+    serverSocket.once('disconnect', (reason) => {
+      clearTimeout(timer);
+      resolve(reason);
+    });
+  });
+  if (mode === 'transport') client.io.engine.close();
+  else client.disconnect();
+  return disconnected;
+}
+
+/**
  * Очищает журналы, чтобы дальше проверять только новые события.
  * @param {...ClientSocket} targets
  */

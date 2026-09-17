@@ -7,6 +7,7 @@ import {
   closeTestResources,
   connectAndJoin,
   connectClient,
+  disconnectClient,
   flushEvents,
   joinAs,
   payloadsOf,
@@ -67,6 +68,30 @@ describe('connectClient', () => {
     await server.close();
 
     await expect(connectClient(server)).rejects.toThrow();
+  });
+});
+
+describe('disconnectClient', () => {
+  it.each([
+    ['disconnect', 'client namespace disconnect'],
+    ['transport', 'transport close'],
+  ])('%s: сервер получает причину «%s», участник уже вышел', async (mode, reason) => {
+    const server = await startTestServer();
+    const { client } = await connectAndJoin(server, ROOM_ID, 'Мария');
+
+    await expect(disconnectClient(client, mode)).resolves.toBe(reason);
+
+    expect(client.connected).toBe(false);
+    expect(server.roomManager.stats()).toEqual({ rooms: 0, participants: 0 });
+    expect(server.io.sockets.sockets.size).toBe(0);
+  });
+
+  it('клиент не подключён — ошибка', async () => {
+    const server = await startTestServer();
+    const client = await connectClient(server);
+    client.disconnect();
+
+    await expect(disconnectClient(client)).rejects.toThrow('Клиент не подключён к серверу');
   });
 });
 
