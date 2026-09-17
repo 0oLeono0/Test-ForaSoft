@@ -219,7 +219,7 @@ flowchart LR
   - Vite + React, роутинг, reducer и «глупые» компоненты: работают на моках, от сети и WebRTC не зависят.
   - _Requirements: FR-1…FR-3, FR-8, FR-11, FR-12, FR-16, FR-18, FR-21…FR-28, FR-35…FR-39, PRD §6, Design: 4.1.1, 4.1.5, 4.1.6, 5.4, 7.5, 8.2_
 
-  - [ ] 6.1 Каркас клиента: Vite, роутинг, раскладка — **0.5 д**
+  - [x] 6.1 Каркас клиента: Vite, роутинг, раскладка — **0.5 д**
     - `vite.config.js`: `@vitejs/plugin-react`, HTTPS из `certs/` (если есть), `server.host: true`, proxy `/socket.io` → `:3000` c `ws: true` (сервер в dev слушает порт по умолчанию, env-префиксы в скриптах не нужны — одинаково в Windows и Unix).
     - `App.jsx`: маршруты `/`, `/room/:roomId`, `*` → `/`; пустые `HomePage` и `RoomPage`.
     - `RoomLayout`: область сетки + правая панель 320px, `min-width: 1024px`; базовые CSS-переменные.

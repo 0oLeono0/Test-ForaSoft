@@ -27,6 +27,9 @@ export default defineConfig({
         },
       },
       {
+        // JSX собирается esbuild-ом Vite: отдельный плагин React в тестах не нужен,
+        // Fast Refresh работает только в dev-сервере (client/vite.config.js).
+        esbuild: { jsx: 'automatic' },
         test: {
           name: 'client',
           environment: 'jsdom',

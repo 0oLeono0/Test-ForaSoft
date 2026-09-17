@@ -9,9 +9,13 @@
     "build": "vite build"
   },
   "devDependencies": {
+    "@vitejs/plugin-react": "^4.7.0",
     "vite": "^5.4.21"
   },
   "dependencies": {
-    "@vcr/shared": "^0.1.0"
+    "@vcr/shared": "^0.1.0",
+    "react": "^19.3.0",
+    "react-dom": "^19.3.0",
+    "react-router-dom": "^6.30.6"
   }
 }
