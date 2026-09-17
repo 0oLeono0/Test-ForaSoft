@@ -150,7 +150,7 @@ flowchart LR
   - Сетевой слой поверх доменной логики: Express, Socket.io, обработчики `room`/`chat`/`media`/`signal`.
   - _Requirements: FR-1, FR-4…FR-10, FR-15, FR-16, FR-21…FR-31, FR-35, FR-40, Design: 4.2, 6.1–6.5, 7.1–7.6, 10, 12.3, 12.5_
 
-  - [ ] 4.1 Конфигурация и логгер — **0.5 д**
+  - [x] 4.1 Конфигурация и логгер — **0.5 д**
     - `config.js`: чтение и валидация env (`PORT`, `HOST`, `SSL_CERT_PATH`, `SSL_KEY_PATH`, `STUN_URLS` → массив `{ urls }`, `CHAT_HISTORY_LIMIT`, `LOG_LEVEL`, `CLIENT_DIST_DIR`), замороженный объект конфигурации, понятная ошибка при неверных значениях.
     - `logger.js`: pino; `redact` для `text`, `sdp`, `candidate`; имя — только на уровне `debug`.
     - Unit-тесты `config` (дефолты, парсинг `STUN_URLS`, ошибка при одном из двух SSL-путей).
