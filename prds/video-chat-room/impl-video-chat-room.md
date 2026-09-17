@@ -108,18 +108,18 @@ flowchart LR
     - Зависит от: 2.1.
     - _Requirements: FR-24, FR-39, FR-40, US-8, Design: 4.3, 10.3, 11.2_
 
-- [ ] 3. Сервер: доменная логика комнат (без сети)
+- [x] 3. Сервер: доменная логика комнат (без сети)
   - Чистые классы без Socket.io: комнаты, атомарный лимит, история, rate limit, разбор payload. Покрываются unit-тестами на 90%.
   - _Requirements: FR-5, FR-7, FR-9, FR-23, FR-25, FR-30, FR-32, FR-40, Design: 4.2.1, 4.2.2, 4.2.3, 5.2, 5.3, 10.4_
 
-  - [ ] 3.1 Класс `Room`: участники и история — **0.5 д**
+  - [x] 3.1 Класс `Room`: участники и история — **0.5 д**
     - `participants: Map` (порядок вставки), `add`/`remove`/`has`/`size`.
     - Кольцевой буфер истории на `CHAT_HISTORY_LIMIT`; `pushMessage`; `snapshot(excludePid)` → `{ participants: ParticipantDTO[], messages: ChatMessage[] }`.
     - Unit-тесты: порядок участников, вытеснение 201-го сообщения, `snapshot` без исключённого участника.
     - Зависит от: 2.2.
     - _Requirements: FR-9, FR-23, FR-26, Design: 4.2.1, 5.2_
 
-  - [ ] 3.2 `RoomManager.join` / `leave`: атомарный лимит и жизненный цикл — **1 д**
+  - [x] 3.2 `RoomManager.join` / `leave`: атомарный лимит и жизненный цикл — **1 д**
     - `join()` **синхронный** (возвращает `JoinOutcome`, не `Promise`): создание комнаты при отсутствии, проверка `size >= MAX_PARTICIPANTS` → `ROOM_FULL`, `participantId = crypto.randomUUID()`, индекс `byParticipant`.
     - `leave(participantId)` идемпотентный → `{ room, participant, roomDeleted } | null`; удаление пустой комнаты вместе с историей.
     - Комментарий-инвариант «без await между проверкой и вставкой» + override ESLint для `rooms/**`: `no-restricted-syntax` запрещает `AwaitExpression` и async-функции.
@@ -127,20 +127,20 @@ flowchart LR
     - Зависит от: 3.1.
     - _Requirements: FR-5, FR-7, FR-9, FR-30, FR-32, US-5, US-10, Design: 4.2.2, 4.2.3_
 
-  - [ ] 3.3 `RoomManager`: сообщения, состояние медиа, статистика — **0.5 д**
+  - [x] 3.3 `RoomManager`: сообщения, состояние медиа, статистика — **0.5 д**
     - `addChatMessage(participantId, text)` → `ChatMessage` с `type: 'user'` (`ts` сервера, `authorName` снимком); `addSystemMessage(roomId, event, subjectName)`.
     - `setMediaState(participantId, state)`; `getRoomOf(participantId)`; `stats()`; `toDTO(participant)` без `socketId`.
     - Unit-тесты: сообщения попадают в историю комнаты автора; системные сообщения сохраняются; `toDTO` не содержит `socketId`.
     - Зависит от: 3.2.
     - _Requirements: FR-15, FR-21, FR-22, FR-25, Design: 5.2, 5.3_
 
-  - [ ] 3.4 `RateLimiter` (token bucket) — **0.5 д**
+  - [x] 3.4 `RateLimiter` (token bucket) — **0.5 д**
     - `consume(key, bucket): boolean`; конфигурация бакетов `join` 5/10 с, `chat` 5/5 с, `media` 20/10 с, `signal` 300/10 с; очистка ключей при отключении сокета (`forget(socketId)`).
     - Unit-тесты на fake timers: burst, пополнение, изоляция ключей и бакетов, `forget`.
     - Зависит от: 1.3.
     - _Requirements: FR-40, Design: 10.4_
 
-  - [ ] 3.5 Проверка формы входящих payload — **0.5 д**
+  - [x] 3.5 Проверка формы входящих payload — **0.5 д**
     - `validate(schemaName, payload)` → `{ ok: true, value } | { ok: false, code: 'INVALID_PAYLOAD' }` для схем `join`, `chat`, `media`, `signal`, без внешних зависимостей; отбрасывание лишних полей, проверка `SignalData` трёх видов, ограничение длины `sdp` и `candidate`.
     - Unit-тесты: не-объект, `null`, неверные типы, лишние поля, `candidate: null`, неизвестный `type`.
     - Зависит от: 2.2, 2.4.

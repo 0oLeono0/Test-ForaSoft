@@ -34,6 +34,31 @@ export default [
     languageOptions: { globals: globals.node },
   },
 
+  // Атомарность лимита участников (FR-7, TDD §4.2.2): код комнат синхронный, чтобы между
+  // проверкой лимита и вставкой участника не было await. Тесты под правило не попадают.
+  {
+    files: ['server/src/rooms/**/*.js'],
+    ignores: ['**/*.test.js'],
+    rules: {
+      'no-restricted-syntax': [
+        'error',
+        {
+          selector: 'AwaitExpression',
+          message: 'RoomManager и Room синхронны: await разрывает атомарность join (TDD §4.2.2).',
+        },
+        {
+          selector: 'ForOfStatement[await=true]',
+          message:
+            'RoomManager и Room синхронны: for await разрывает атомарность join (TDD §4.2.2).',
+        },
+        {
+          selector: ':function[async=true]',
+          message: 'RoomManager и Room синхронны: async-функции запрещены (TDD §4.2.2).',
+        },
+      ],
+    },
+  },
+
   { files: CLIENT_SOURCES, ...react.configs.flat.recommended },
   { files: CLIENT_SOURCES, ...react.configs.flat['jsx-runtime'] },
   { files: CLIENT_SOURCES, ...reactHooks.configs.flat.recommended },
