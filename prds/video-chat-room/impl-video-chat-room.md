@@ -53,7 +53,7 @@ flowchart LR
   - npm workspaces, ESM, линт, тестовый раннер и подключение `@vcr/shared` к серверу и клиенту.
   - _Requirements: PRD §7 (стек), Design: 1.2, 3.3, 3.4, 12.1_
 
-  - [ ] 1.1 Инициализировать npm workspaces — **0.5 д**
+  - [x] 1.1 Инициализировать npm workspaces — **0.5 д**
     - Корневой `package.json` с workspaces `shared`, `server`, `client`; `engines.node >= 20`; `.nvmrc`.
     - `"type": "module"` во всех пакетах (ESM в Node и в Vite).
     - `.gitignore`: `node_modules`, `dist`, `certs`, `coverage`, `playwright-report`, `test-results`.

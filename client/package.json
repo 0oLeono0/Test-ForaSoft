@@ -1,0 +1,7 @@
+{
+  "name": "@vcr/client",
+  "version": "0.1.0",
+  "private": true,
+  "description": "SPA видеочат-комнаты",
+  "type": "module"
+}

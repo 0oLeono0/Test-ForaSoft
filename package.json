@@ -1,0 +1,15 @@
+{
+  "name": "video-chat-room",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Видеочат-комната до 4 участников: WebRTC mesh, Socket.io, React",
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "workspaces": [
+    "shared",
+    "server",
+    "client"
+  ]
+}
