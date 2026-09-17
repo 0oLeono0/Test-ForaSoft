@@ -67,7 +67,7 @@ flowchart LR
     - DoD: специально добавленный `dangerouslySetInnerHTML` в тестовом файле даёт ошибку линта (файл потом удалить).
     - _Requirements: FR-39, Design: 3.4, 10.3_
 
-  - [ ] 1.3 Настроить Vitest workspace и пороги покрытия — **0.5 д**
+  - [x] 1.3 Настроить Vitest workspace и пороги покрытия — **0.5 д**
     - Корневой `vitest.config.js` с `test.projects`: `shared` (node), `server` (node), `client` (jsdom + `@testing-library/jest-dom`).
     - `@vitest/coverage-v8` с порогами из §11.7 для каждого пакета; скрипты `test`, `test:watch`, `test:coverage`.
     - По одному smoke-тесту на пакет.
