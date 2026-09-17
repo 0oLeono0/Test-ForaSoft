@@ -146,7 +146,7 @@ flowchart LR
     - Зависит от: 2.2, 2.4.
     - _Requirements: FR-10, FR-38, Design: 4.2.1, 6.2, 8.1_
 
-- [ ] 4. Сервер: HTTP, Socket.io и обработчики событий
+- [x] 4. Сервер: HTTP, Socket.io и обработчики событий
   - Сетевой слой поверх доменной логики: Express, Socket.io, обработчики `room`/`chat`/`media`/`signal`.
   - _Requirements: FR-1, FR-4…FR-10, FR-15, FR-16, FR-21…FR-31, FR-35, FR-40, Design: 4.2, 6.1–6.5, 7.1–7.6, 10, 12.3, 12.5_
 
@@ -184,7 +184,7 @@ flowchart LR
     - Зависит от: 4.4.
     - _Requirements: FR-15, FR-16, FR-18, FR-21, FR-22, FR-24, FR-40, US-7, US-8, Design: 6.3, 6.4, 7.4, 7.5_
 
-  - [ ] 4.6 Обработчик `signal` (relay) — **0.5 д**
+  - [x] 4.6 Обработчик `signal` (relay) — **0.5 д**
     - Guard → rate limit `signal` → получатель `to` должен быть в **той же** комнате → `io.to(target.socketId).emit('signal', { from: socket.data.participantId, data })`; иначе `signal:error` (`PEER_NOT_FOUND`, `INVALID_SIGNAL`, `RATE_LIMITED`).
     - Поле `from` из payload игнорируется, его проставляет сервер.
     - Зависит от: 4.4.

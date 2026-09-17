@@ -5,6 +5,7 @@ import { CLIENT_EVENTS, ERROR_CODES, ERROR_MESSAGES } from '@vcr/shared';
 import { handleChatSend } from './handlers/chat.js';
 import { handleMediaState } from './handlers/media.js';
 import { handleDisconnect, handleJoin, handleLeave } from './handlers/room.js';
+import { handleSignal } from './handlers/signal.js';
 
 /**
  * @typedef {Object} HandlerDeps
@@ -35,6 +36,7 @@ const EVENT_HANDLERS = Object.freeze({
   [CLIENT_EVENTS.ROOM_LEAVE]: handleLeave,
   [CLIENT_EVENTS.CHAT_SEND]: handleChatSend,
   [CLIENT_EVENTS.MEDIA_STATE]: handleMediaState,
+  [CLIENT_EVENTS.SIGNAL]: handleSignal,
 });
 
 /**
