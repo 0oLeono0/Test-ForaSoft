@@ -194,7 +194,7 @@ flowchart LR
   - Сценарии I-1…I-11 из TDD против настоящего сервера на эфемерном порту и `socket.io-client`.
   - _Requirements: FR-4…FR-10, FR-15, FR-16, FR-21, FR-23…FR-25, FR-27, FR-29, FR-31, FR-38, FR-40, Design: 11.3_
 
-  - [ ] 5.1 Тестовый стенд — **0.5 д**
+  - [x] 5.1 Тестовый стенд — **0.5 д**
     - `server/test/integration/harness.js`: `startTestServer()` на порту `0`, `connectClient()` → клиентский сокет, `joinAs(client, roomId, name)`, `waitForEvent(client, event, predicate, timeoutMs)`, автоматическое закрытие в `afterEach`.
     - Отдельный Vitest-проект `server-integration` и скрипт `test:integration`.
     - Зависит от: 4.3.

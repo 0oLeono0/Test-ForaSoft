@@ -17,6 +17,15 @@ export default defineConfig({
           include: ['server/src/**/*.test.js'],
         },
       },
+      // Настоящий сервер и socket.io-client (TDD §11.3). В npm test и test:coverage не входит:
+      // запускается отдельно, npm run test:integration.
+      {
+        test: {
+          name: 'server-integration',
+          environment: 'node',
+          include: ['server/test/integration/**/*.test.js'],
+        },
+      },
       {
         test: {
           name: 'client',
