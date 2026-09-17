@@ -134,7 +134,7 @@ flowchart LR
     - Зависит от: 3.2.
     - _Requirements: FR-15, FR-21, FR-22, FR-25, Design: 5.2, 5.3_
 
-  - [ ] 3.4 `RateLimiter` (token bucket) — **0.5 д**
+  - [x] 3.4 `RateLimiter` (token bucket) — **0.5 д**
     - `consume(key, bucket): boolean`; конфигурация бакетов `join` 5/10 с, `chat` 5/5 с, `media` 20/10 с, `signal` 300/10 с; очистка ключей при отключении сокета (`forget(socketId)`).
     - Unit-тесты на fake timers: burst, пополнение, изоляция ключей и бакетов, `forget`.
     - Зависит от: 1.3.
