@@ -242,7 +242,7 @@ flowchart LR
     - Зависит от: 2.2, 6.1.
     - _Requirements: FR-23, FR-26, FR-30, Design: 4.1.6_
 
-  - [ ] 6.4 `NameForm` и `HomePage` — **0.5 д**
+  - [x] 6.4 `NameForm` и `HomePage` — **0.5 д**
     - `NameForm`: `maxLength=30`, `validateName` из `shared`, подсказка под полем, блокировка кнопки при `busy`, отправка по Enter.
     - `HomePage`: «Создать комнату» → `nanoid(10)` → `sessionName.set` → `navigate('/room/:id')`.
     - Компонентные тесты: пустое и пробельное имя → подсказка, переход не происходит; недопустимые символы → подсказка; валидное имя → вызван `navigate` с корректным id.
