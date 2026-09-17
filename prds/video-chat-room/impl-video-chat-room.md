@@ -112,7 +112,7 @@ flowchart LR
   - Чистые классы без Socket.io: комнаты, атомарный лимит, история, rate limit, разбор payload. Покрываются unit-тестами на 90%.
   - _Requirements: FR-5, FR-7, FR-9, FR-23, FR-25, FR-30, FR-32, FR-40, Design: 4.2.1, 4.2.2, 4.2.3, 5.2, 5.3, 10.4_
 
-  - [ ] 3.1 Класс `Room`: участники и история — **0.5 д**
+  - [x] 3.1 Класс `Room`: участники и история — **0.5 д**
     - `participants: Map` (порядок вставки), `add`/`remove`/`has`/`size`.
     - Кольцевой буфер истории на `CHAT_HISTORY_LIMIT`; `pushMessage`; `snapshot(excludePid)` → `{ participants: ParticipantDTO[], messages: ChatMessage[] }`.
     - Unit-тесты: порядок участников, вытеснение 201-го сообщения, `snapshot` без исключённого участника.
