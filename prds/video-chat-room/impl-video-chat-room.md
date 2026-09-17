@@ -170,7 +170,7 @@ flowchart LR
     - Зависит от: 3.2, 4.2.
     - _Requirements: FR-31, FR-35, Design: 4.2.1, 6.2, 12.1, 12.5_
 
-  - [ ] 4.4 Обработчики `room:join`, `room:leave`, `disconnect` — **1 д**
+  - [x] 4.4 Обработчики `room:join`, `room:leave`, `disconnect` — **1 д**
     - `registerHandlers(io, deps)`: `socket.data = { participantId: null, roomId: null }`, обёртка обработчиков try/catch → `INTERNAL_ERROR`.
     - `room:join`: guard → rate limit → `isValidRoomId` / `validateName` → `ALREADY_IN_ROOM` → `RoomManager.join` → синхронный `socket.join` → broadcast `participant:joined` + системное `joined` → ack `{ ok: true, self, participants, messages, iceServers, limits }` (снимок без себя).
     - `room:leave` и `disconnect` → общий `handleLeave`: `participant:left` + системное `left` (не «соединение потеряно»), `rateLimiter.forget`.

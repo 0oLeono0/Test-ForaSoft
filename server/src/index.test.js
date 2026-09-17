@@ -47,6 +47,36 @@ async function startServer(config = testConfig(), options = {}) {
   return { ...server, baseUrl: `http://127.0.0.1:${server.httpServer.address().port}` };
 }
 
+/**
+ * Клиент Socket.io на протоколе long-polling (Engine.IO 4) без клиентской библиотеки:
+ * подключается к namespace `/` и отправляет события с ack.
+ */
+async function connectPolling(baseUrl) {
+  const endpoint = `${baseUrl}/socket.io/?EIO=4&transport=polling`;
+  const handshake = await (await fetch(endpoint)).text();
+  const url = `${endpoint}&sid=${JSON.parse(handshake.slice(1)).sid}`;
+
+  const post = async (packet) => {
+    expect(await (await fetch(url, { method: 'POST', body: packet })).text()).toBe('ok');
+  };
+  // Пакеты в одном ответе разделены символом RS (0x1E).
+  const poll = async () => (await (await fetch(url)).text()).split('\x1e');
+
+  await post('40');
+  expect((await poll())[0]).toMatch(/^40\{"sid":/);
+
+  let ackId = 0;
+  return {
+    /** Отправляет событие и возвращает payload ack. */
+    async request(event, payload) {
+      ackId += 1;
+      await post(`42${ackId}${JSON.stringify([event, payload])}`);
+      const ack = (await poll()).find((packet) => packet.startsWith(`43${ackId}[`));
+      return JSON.parse(ack.slice(`43${ackId}`.length))[0];
+    },
+  };
+}
+
 describe('createServer', () => {
   it('без SSL собирает HTTP-сервер с Socket.io и не слушает порт до listen', () => {
     const server = createServer(testConfig(), { logger: fakeLogger() });
@@ -96,6 +126,32 @@ describe('createServer', () => {
 
     expect(response.status).toBe(200);
     expect(await response.json()).toMatchObject({ status: 'ok', rooms: 1, participants: 1 });
+  });
+
+  it('обработчики событий подключены: room:join отвечает ack с iceServers из конфигурации', async () => {
+    const config = testConfig({ STUN_URLS: 'stun:192.168.1.10:3478' });
+    const { baseUrl, roomManager } = await startServer(config);
+    const client = await connectPolling(baseUrl);
+
+    const ack = await client.request('room:join', { roomId: 'V1StGXR8_Z', name: 'Мария' });
+
+    expect(ack).toMatchObject({
+      ok: true,
+      self: { name: 'Мария' },
+      participants: [],
+      iceServers: [{ urls: 'stun:192.168.1.10:3478' }],
+    });
+    expect(roomManager.stats()).toEqual({ rooms: 1, participants: 1 });
+  });
+
+  it('close отключает участников: их комнаты удаляются', async () => {
+    const server = await startServer();
+    const client = await connectPolling(server.baseUrl);
+    await client.request('room:join', { roomId: 'V1StGXR8_Z', name: 'Мария' });
+
+    await server.close();
+
+    expect(server.roomManager.stats()).toEqual({ rooms: 0, participants: 0 });
   });
 
   it('размер истории чата берётся из конфигурации', () => {

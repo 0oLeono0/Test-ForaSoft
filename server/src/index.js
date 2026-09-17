@@ -11,6 +11,8 @@ import { ConfigError, loadConfig } from './config.js';
 import { createApp } from './http/app.js';
 import { createLogger } from './logger.js';
 import { RoomManager } from './rooms/RoomManager.js';
+import { RateLimiter } from './socket/rateLimiter.js';
+import { registerHandlers } from './socket/registerHandlers.js';
 
 /** @typedef {import('./config.js').ServerConfig} ServerConfig */
 
@@ -64,6 +66,12 @@ export function createServer(
     : createHttpServer(app);
   // Копия: Socket.io дописывает в объект параметров значения по умолчанию.
   const io = new Server(httpServer, { ...SOCKET_OPTIONS });
+  registerHandlers(io, {
+    roomManager,
+    rateLimiter: new RateLimiter(),
+    logger,
+    iceServers: config.iceServers,
+  });
 
   let closing = null;
   /**
