@@ -108,7 +108,7 @@ flowchart LR
     - Зависит от: 2.1.
     - _Requirements: FR-24, FR-39, FR-40, US-8, Design: 4.3, 10.3, 11.2_
 
-- [ ] 3. Сервер: доменная логика комнат (без сети)
+- [x] 3. Сервер: доменная логика комнат (без сети)
   - Чистые классы без Socket.io: комнаты, атомарный лимит, история, rate limit, разбор payload. Покрываются unit-тестами на 90%.
   - _Requirements: FR-5, FR-7, FR-9, FR-23, FR-25, FR-30, FR-32, FR-40, Design: 4.2.1, 4.2.2, 4.2.3, 5.2, 5.3, 10.4_
 
@@ -140,7 +140,7 @@ flowchart LR
     - Зависит от: 1.3.
     - _Requirements: FR-40, Design: 10.4_
 
-  - [ ] 3.5 Проверка формы входящих payload — **0.5 д**
+  - [x] 3.5 Проверка формы входящих payload — **0.5 д**
     - `validate(schemaName, payload)` → `{ ok: true, value } | { ok: false, code: 'INVALID_PAYLOAD' }` для схем `join`, `chat`, `media`, `signal`, без внешних зависимостей; отбрасывание лишних полей, проверка `SignalData` трёх видов, ограничение длины `sdp` и `candidate`.
     - Unit-тесты: не-объект, `null`, неверные типы, лишние поля, `candidate: null`, неизвестный `type`.
     - Зависит от: 2.2, 2.4.
