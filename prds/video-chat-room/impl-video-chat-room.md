@@ -60,7 +60,7 @@ flowchart LR
     - DoD: `npm install` из корня ставит зависимости всех пакетов; `node server/src/index.js` с заглушкой запускается.
     - _Requirements: PRD §7, Design: 3.3, 3.4_
 
-  - [ ] 1.2 Настроить ESLint, Prettier и скрипты проверки — **0.5 д**
+  - [x] 1.2 Настроить ESLint, Prettier и скрипты проверки — **0.5 д**
     - ESLint flat config: `@eslint/js` recommended, `eslint-plugin-react`, `eslint-plugin-react-hooks`, `globals` (node / browser по пакетам).
     - Правила безопасности: `react/no-danger`, `no-restricted-properties` для `innerHTML`/`outerHTML`.
     - Корневые скрипты: `lint`, `format`, `format:check`.
