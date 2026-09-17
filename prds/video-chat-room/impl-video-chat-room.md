@@ -234,7 +234,7 @@ flowchart LR
     - Зависит от: 6.1.
     - _Requirements: FR-3, FR-22, FR-28, Design: 4.1.4, 4.1.5, 5.4, 8.2_
 
-  - [ ] 6.3 `roomReducer` и контекст комнаты — **0.5 д**
+  - [x] 6.3 `roomReducer` и контекст комнаты — **0.5 д**
     - `initialState` и список действий из §4.1.6 как константы `ACTIONS` (без строковых литералов в компонентах); неизвестное действие в `default` выбрасывает ошибку.
     - Дедупликация `CHAT_MESSAGE` по `id`, ограничение истории `CHAT_HISTORY_LIMIT`, `PARTICIPANT_LEFT` удаляет и участника, и `links[peerId]`.
     - `RoomContext` (state + dispatch + доступ к `RoomSession`).
