@@ -158,6 +158,19 @@ export class RoomSession {
     this.#dispatch({ type: ACTIONS.LEFT });
   }
 
+  /**
+   * Закрытие или перезагрузка вкладки (TDD §7.6): `room:leave` уходит без ожидания ack —
+   * страница вот-вот исчезнет. Если событие не успеет дойти, слот освободит обработчик
+   * `disconnect` на сервере, просто чуть позже.
+   */
+  notifyLeaving() {
+    if (!this.#inRoom || this.#destroyed) return;
+    this.#inRoom = false;
+    this.#signaling.leave().catch(() => {
+      // Ответ нас уже не застанет.
+    });
+  }
+
   /** Размонтирование `RoomPage`: снять подписки и закрыть сокет, состояние уже не нужно. */
   destroy() {
     if (this.#destroyed) return;
@@ -200,6 +213,8 @@ export class RoomSession {
   /** Экран ошибки входа: следующий `start` разрешён — это «Повторить вход» (TDD §4.1.2). */
   #fail(code) {
     this.#started = false;
+    // Страница уже размонтирована (в StrictMode это обычный прогон эффектов) — состояния нет.
+    if (this.#destroyed) return;
     this.#dispatch({ type: ACTIONS.JOIN_FAILED, error: code });
   }
 

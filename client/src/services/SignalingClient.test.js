@@ -7,6 +7,7 @@ import {
   SIGNALING_EVENTS,
   SignalingClient,
   SignalingError,
+  createSignalingClient,
 } from './SignalingClient.js';
 
 /**
@@ -77,6 +78,18 @@ beforeEach(() => {
 
 afterEach(() => {
   vi.useRealTimers();
+});
+
+describe('createSignalingClient', () => {
+  it('создаётся на настоящем socket.io-client, не подключаясь', () => {
+    // Socket.io дописывает свои поля в переданные опции: замороженную константу отдавать нельзя.
+    vi.useRealTimers();
+
+    const client = createSignalingClient();
+
+    expect(client).toBeInstanceOf(SignalingClient);
+    client.disconnect();
+  });
 });
 
 describe('SignalingClient.connect', () => {

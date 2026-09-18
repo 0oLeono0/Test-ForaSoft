@@ -190,5 +190,7 @@ function isLocalEvent(event) {
 
 /** Боевой клиент: адрес берётся из текущего origin, путь `/socket.io` (TDD §6.2). */
 export function createSignalingClient() {
-  return new SignalingClient(io(SOCKET_OPTIONS));
+  // Копия обязательна: Socket.io дописывает в переданные опции свои поля (`path`, `query`),
+  // а замороженный объект-константу этим не расширить.
+  return new SignalingClient(io({ ...SOCKET_OPTIONS }));
 }
