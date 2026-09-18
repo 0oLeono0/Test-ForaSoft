@@ -17,6 +17,7 @@
     "server:dev": "node --watch server/src/index.js",
     "client:dev": "npm run dev --workspace @vcr/client",
     "build": "npm run build --workspace @vcr/client",
+    "build:test": "npm run build:test --workspace @vcr/client",
     "start": "node server/src/index.js",
     "lint": "eslint .",
     "format": "prettier --write .",
@@ -24,10 +25,12 @@
     "test": "vitest run --project=!server-integration",
     "test:watch": "vitest --project=!server-integration",
     "test:coverage": "vitest run --coverage --project=!server-integration",
-    "test:integration": "vitest run --project=server-integration"
+    "test:integration": "vitest run --project=server-integration",
+    "test:e2e": "playwright test"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.5",
+    "@playwright/test": "^1.63.0",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.3",
     "@testing-library/user-event": "^14.6.7",

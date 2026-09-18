@@ -34,6 +34,13 @@ export default [
     languageOptions: { globals: globals.node },
   },
 
+  // E2E выполняются в Node, но тела page.evaluate и addInitScript — код страницы: в одном файле
+  // соседствуют process.env и window (TDD §11.4).
+  {
+    files: ['e2e/**/*.js'],
+    languageOptions: { globals: { ...globals.node, ...globals.browser } },
+  },
+
   // Атомарность лимита участников (FR-7, TDD §4.2.2): код комнат синхронный, чтобы между
   // проверкой лимита и вставкой участника не было await. Тесты под правило не попадают.
   {

@@ -374,7 +374,7 @@ flowchart LR
     - Зависит от: 4.3, 8.5.
     - _Requirements: PRD §7 (HTTPS), Design: 12.1, 12.2, 12.3_
 
-  - [ ] 9.2 Настройка Playwright — **0.5 д**
+  - [x] 9.2 Настройка Playwright — **0.5 д**
     - Папка `e2e/` (`@playwright/test` — devDependency в корне): `playwright.config.js` (Chromium, `--use-fake-ui-for-media-stream`, `--use-fake-device-for-media-stream`, `webServer`: `vite build --mode test` + `node server/src/index.js`, `retries: 1`, trace on failure). Скрипт `build:test`.
     - Хелперы: `createParticipant(browser, name)` (отдельный `browserContext`), `createRoom`, `joinRoom(url)`, `waitForPeerConnected(page, count)` через `window.__vcr`.
     - Зависит от: 8.7, 9.1.
