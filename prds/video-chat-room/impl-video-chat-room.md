@@ -307,18 +307,18 @@ flowchart LR
     - Зависит от: 4.6, 6.4, 6.5, 6.6, 6.7, 6.8, 7.2.
     - _Requirements: FR-4, FR-5, FR-8, FR-28, FR-29, FR-35, US-4, US-5, US-10, US-13, Design: 4.1.1, 4.1.2, 7.1, 8.3_
 
-- [ ] 8. Клиент: медиа и WebRTC mesh
+- [x] 8. Клиент: медиа и WebRTC mesh
   - Локальные устройства, P2P-соединения со всеми участниками, тумблеры без повторного согласования, ошибки устройств и autoplay. **Итог — веха M2.**
   - _Requirements: FR-10, FR-13…FR-20, FR-33, FR-34, FR-37, Design: 3.2, 4.1.3, 4.1.4, 7.2, 7.4, 8.2, 8.3_
 
-  - [ ] 8.1 `MediaManager.acquire()`: первичный захват с частичным успехом — **1 д**
+  - [x] 8.1 `MediaManager.acquire()`: первичный захват с частичным успехом — **1 д**
     - `enumerateDevices` → наличие устройств; один запрос `getUserMedia` на оба вида; при ошибке — отдельные запросы на каждый вид.
     - Результат `{ audio: TrackResult, video: TrackResult }`, соответствие ошибок через `mediaErrors`; `VIDEO_CONSTRAINTS` (640×480, 24 fps). Если устройств нет совсем, `getUserMedia` не вызывается.
     - Unit-тесты на моке `navigator.mediaDevices`: всё ok; нет камеры; отказ в доступе; камера занята (`NotReadableError`), а микрофон ok; нет устройств вообще (`getUserMedia` не вызван, оба `NOT_FOUND`).
     - Зависит от: 6.2.
     - _Requirements: FR-13, FR-14, FR-33, US-6, US-12, Design: 4.1.4, 8.2_
 
-  - [ ] 8.2 `MediaManager`: тумблеры, потеря устройства, освобождение — **1 д**
+  - [x] 8.2 `MediaManager`: тумблеры, потеря устройства, освобождение — **1 д**
     - `setAudioEnabled`: `track.enabled`, а если трека нет — захват микрофона.
     - `setVideoEnabled(false)`: `track.stop()` (аппаратный индикатор гаснет); `setVideoEnabled(true)`: новый `getUserMedia({ video })`, ошибка → статус трека (`DENIED` / `NOT_FOUND` / `BUSY` / `ERROR`).
     - `onended` трека → `onDeviceLost(kind)`; `onTrackChange(kind, track | null)` для mesh; `dispose()` останавливает все треки.
@@ -326,7 +326,7 @@ flowchart LR
     - Зависит от: 8.1.
     - _Requirements: FR-15, FR-17, FR-19, FR-20, US-7, Design: 4.1.4, 7.4_
 
-  - [ ] 8.3 `PeerLink`: одно P2P-соединение — **1 д**
+  - [x] 8.3 `PeerLink`: одно P2P-соединение — **1 д**
     - `createOfferer` / `createAnswerer`: трансиверы `audio` + `video` `sendrecv`, `replaceTrack(localTrack ?? null)`, единственный обмен SDP через внедрённый `sendSignal`; `onnegotiationneeded` не используется.
     - Очередь ICE-кандидатов до `setRemoteDescription`; `candidate: null` → end-of-candidates.
     - `remoteStream` из `pc.getReceivers()`; `replaceTrack(kind, track)`; статус `connecting` → `connected` / `failed` (таймаут 15 с или `connectionState='failed'`); `close()`.
@@ -335,14 +335,14 @@ flowchart LR
     - Зависит от: 2.2.
     - _Requirements: FR-10, FR-34, US-6, Design: 3.2, 4.1.4, 7.2_
 
-  - [ ] 8.4 `PeerMesh`: реестр соединений — **0.5 д**
+  - [x] 8.4 `PeerMesh`: реестр соединений — **0.5 д**
     - `connectTo(peerIds)` — создать offerer для каждого участника из снимка; `handleSignal(from, data)` — answerer на offer от неизвестного пира, маршрутизация answer и candidate, игнор сигналов от ушедших; защитное пересоздание при повторном offer.
     - `removePeer`, `broadcastTrack(kind, track)`, `closeAll()`, `getStream(peerId)`, события статуса.
     - Unit-тесты с фабрикой-моком `PeerLink`: роли offerer/answerer; сигнал от неизвестного `from` после выхода игнорируется; `broadcastTrack` доходит до всех.
     - Зависит от: 8.3.
     - _Requirements: FR-10, US-6, US-11, Design: 3.2, 4.1.3, 7.2, 8.3_
 
-  - [ ] 8.5 `RoomSession`, часть 2: подключение медиа и mesh — **1 д**
+  - [x] 8.5 `RoomSession`, часть 2: подключение медиа и mesh — **1 д**
     - После `JOIN_OK` **параллельно**: `mesh.connectTo(participants)` сразу с `null`-треками и `acquire()` → `LOCAL_MEDIA` → `broadcastTrack` → `media:state`. Offer не ждёт диалога разрешений (Design 4.1.2, 7.2). Входящий `signal` → `mesh.handleSignal`; `participant:left` → `removePeer`; `signal:error PEER_NOT_FOUND` → `removePeer`.
     - `toggleMic` / `toggleCamera` → `MediaManager` → `broadcastTrack` → `media:state`; потеря устройства → toast «Устройство отключено» + `media:state`; toasts для `DENIED` / `BUSY` / `NOT_FOUND`.
     - `LINK_STATUS` в reducer; `getStream(peerId)` для плиток; при `leave` / `CONNECTION_LOST` / `destroy` — `closeAll()` и `dispose()`.
@@ -351,13 +351,13 @@ flowchart LR
     - Зависит от: 7.3, 8.2, 8.4.
     - _Requirements: FR-10, FR-13…FR-20, FR-33, US-6, US-7, US-11, US-12, Design: 4.1.3, 4.1.4, 7.2, 7.4, 8.2, 8.3, 13 (R-8)_
 
-  - [ ] 8.6 Autoplay: баннер «Включить звук» — **0.5 д**
+  - [x] 8.6 Autoplay: баннер «Включить звук» — **0.5 д**
     - `useMediaElement` сообщает об отклонённом `play()` → `AUDIO_LOCKED`; `AudioUnlockBanner` по клику вызывает `play()` у всех удалённых элементов и сбрасывает флаг.
     - Компонентные тесты: баннер появляется при `NotAllowedError` и исчезает после клика.
     - Зависит от: 6.8, 8.5.
     - _Requirements: FR-37, US-13, Design: 4.1.1, 4.1.5, 8.2_
 
-  - [ ] 8.7 Тестовый хук `window.__vcr` — **0.25 д**
+  - [x] 8.7 Тестовый хук `window.__vcr` — **0.25 д**
     - Только при `import.meta.env.MODE === 'test'`: `links` (статусы по пирам), состояние локальных треков (`readyState`, `enabled`), `participants`.
     - Проверка сборки: в production-бандле хука нет (поиск строки `__vcr` в `client/dist`).
     - Зависит от: 8.5.

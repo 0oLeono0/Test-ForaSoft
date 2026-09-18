@@ -1,29 +1,54 @@
-import { useEffect, useReducer, useRef } from 'react';
+import { useEffect, useReducer, useState, useSyncExternalStore } from 'react';
 import { RoomSession } from '../services/RoomSession.js';
 import { initialState, roomReducer } from '../state/roomReducer.js';
 import * as sessionName from '../state/sessionName.js';
 import { clear as clearToasts } from '../state/toasts.js';
 
 /**
+ * Маленькое внешнее хранилище на одну ссылку: сессия рождается в эффекте, а плиткам она нужна
+ * уже в рендере — они спрашивают у неё потоки (TDD §4.1.6). Тот же приём, что у очереди
+ * уведомлений: `useSyncExternalStore` вместо чтения `ref.current` во время отрисовки.
+ */
+function createSessionHolder() {
+  /** @type {RoomSession|null} */
+  let session = null;
+  /** @type {Set<() => void>} */
+  const listeners = new Set();
+
+  return {
+    getSnapshot: () => session,
+    publish(next) {
+      session = next;
+      for (const listener of [...listeners]) listener();
+    },
+    subscribe(listener) {
+      listeners.add(listener);
+      return () => listeners.delete(listener);
+    },
+  };
+}
+
+/**
  * Жизненный цикл сессии комнаты для `RoomPage` (TDD §4.1.2, §4.1.3).
  *
  * `RoomSession` создаётся и уничтожается в одном эффекте: так двойной прогон эффектов в
- * `StrictMode` даёт чистую пару «создали — закрыли», а не сессию с закрытым сокетом.
- * Наружу она отдаётся ссылкой: сессия — внешняя система, а не состояние React, и рендер
- * вызывают действия reducer, а не смена объекта. До первого эффекта `sessionRef.current`
- * равен `null`: в этот момент на экране форма имени или «Подключаемся…», и звать сессию некому.
+ * `StrictMode` даёт чистую пару «создали — закрыли», а не сессию с закрытым сокетом. До этого
+ * эффекта сессия равна `null`: в этот момент на экране форма имени или «Подключаемся…», и
+ * звать её некому. Рендер вызывают действия reducer, а не смена этого объекта: сессия —
+ * внешняя система, а не состояние React.
  *
  * @param {string} roomId  идентификатор из адреса; его валидность проверяет `RoomSession.start`
  * @returns {{ state: import('../state/roomReducer.js').RoomState, dispatch: Function,
- *             sessionRef: import('react').RefObject<RoomSession|null> }}
+ *             session: RoomSession|null }}
  */
 export function useRoomSession(roomId) {
   const [state, dispatch] = useReducer(roomReducer, initialState);
-  const sessionRef = useRef(null);
+  const [holder] = useState(createSessionHolder);
+  const session = useSyncExternalStore(holder.subscribe, holder.getSnapshot);
 
   useEffect(() => {
     const created = new RoomSession({ dispatch });
-    sessionRef.current = created;
+    holder.publish(created);
 
     // Имя уже в памяти — пользователь пришёл с главной в рамках той же загрузки SPA:
     // форма имени пропускается, вход начинается сразу (TDD §4.1.1).
@@ -38,11 +63,11 @@ export function useRoomSession(roomId) {
     return () => {
       window.removeEventListener('pagehide', notifyLeaving);
       created.destroy();
-      sessionRef.current = null;
+      holder.publish(null);
       // Уведомления относятся к комнате, из которой мы уходим.
       clearToasts();
     };
-  }, [roomId]);
+  }, [roomId, holder]);
 
-  return { state, dispatch, sessionRef };
+  return { state, dispatch, session };
 }

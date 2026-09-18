@@ -27,6 +27,10 @@ vi.mock('../services/RoomSession.js', () => ({
       this.start = vi.fn();
       this.leave = vi.fn();
       this.sendMessage = vi.fn(() => Promise.resolve(true));
+      this.toggleMic = vi.fn();
+      this.toggleCamera = vi.fn();
+      // Потоки живут в сервисах: в jsdom `MediaStream` нет, плиткам достаточно `null`.
+      this.getStream = vi.fn(() => null);
       this.notifyLeaving = vi.fn();
       this.destroy = vi.fn();
       sessions.push(this);
@@ -70,9 +74,12 @@ function joinOk(session, participants = [MARIA]) {
 
 beforeEach(() => {
   sessions.length = 0;
+  // jsdom не воспроизводит медиа: без заглушки play() пишет в консоль «not implemented».
+  HTMLMediaElement.prototype.play = vi.fn().mockResolvedValue(undefined);
 });
 
 afterEach(() => {
+  delete HTMLMediaElement.prototype.play;
   sessionName.clear();
   clearToasts();
 });
@@ -158,6 +165,41 @@ describe('RoomPage: экран комнаты', () => {
     await user.click(screen.getByRole('button', { name: 'Отправить' }));
 
     expect(session().sendMessage).toHaveBeenCalledWith('Привет');
+  });
+
+  it('тумблеры микрофона и камеры зовут сессию (FR-15, FR-17, US-7)', async () => {
+    sessionName.set('Алекс');
+    const { user, session } = setup();
+    joinOk(session());
+
+    await user.click(screen.getByRole('button', { name: /Микрофон/ }));
+    await user.click(screen.getByRole('button', { name: /Камера/ }));
+
+    expect(session().toggleMic).toHaveBeenCalledOnce();
+    expect(session().toggleCamera).toHaveBeenCalledOnce();
+  });
+
+  it('плитки берут потоки из сессии, а не из reducer (TDD §4.1.6)', () => {
+    sessionName.set('Алекс');
+    const { session } = setup();
+    joinOk(session());
+
+    expect(session().getStream).toHaveBeenCalledWith(SELF.id);
+    expect(session().getStream).toHaveBeenCalledWith(MARIA.id);
+  });
+
+  it('autoplay заблокирован: баннер появляется и уходит после клика (FR-37, US-13)', async () => {
+    sessionName.set('Алекс');
+    const { user, session } = setup();
+    joinOk(session());
+    const unlock = () => screen.queryByRole('button', { name: 'Включить звук' });
+    expect(unlock()).not.toBeInTheDocument();
+
+    emit(session(), { type: ACTIONS.AUDIO_LOCKED, locked: true });
+    expect(unlock()).toBeInTheDocument();
+
+    await user.click(unlock());
+    await waitFor(() => expect(unlock()).not.toBeInTheDocument());
   });
 
   it('«Выйти» прощается с сервером и уводит на главную (FR-27, US-10)', async () => {

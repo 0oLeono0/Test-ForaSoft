@@ -1,6 +1,6 @@
 import { render } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { useMediaElement } from './useMediaElement.js';
+import { unlockMediaElements, useMediaElement } from './useMediaElement.js';
 
 /** jsdom не реализует воспроизведение: play подменяется, srcObject — обычное свойство. */
 let play;
@@ -109,5 +109,34 @@ describe('useMediaElement', () => {
     rerender(<Player stream={stream} onAutoplayBlocked={vi.fn()} />);
 
     expect(play).toHaveBeenCalledOnce();
+  });
+});
+
+describe('unlockMediaElements: баннер «Включить звук» (FR-37)', () => {
+  it('запускает все плитки разом — один жест снимает блокировку для всех', async () => {
+    renderPlayer({ stream: { id: 'stream-1' } });
+    render(<Player stream={{ id: 'stream-2' }} />);
+    play.mockClear();
+
+    await unlockMediaElements();
+
+    expect(play).toHaveBeenCalledTimes(2);
+  });
+
+  it('размонтированные плитки не запускаются', async () => {
+    const { unmount } = renderPlayer({ stream: { id: 'stream-1' } });
+    unmount();
+    play.mockClear();
+
+    await unlockMediaElements();
+
+    expect(play).not.toHaveBeenCalled();
+  });
+
+  it('отказавший play баннер не роняет', async () => {
+    renderPlayer({ stream: { id: 'stream-1' } });
+    play.mockRejectedValue(new DOMException('gesture required', 'NotAllowedError'));
+
+    await expect(unlockMediaElements()).resolves.toBeUndefined();
   });
 });

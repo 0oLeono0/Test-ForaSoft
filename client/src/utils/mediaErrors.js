@@ -52,3 +52,39 @@ export const CLIENT_ERROR_CODES = Object.freeze({
 });
 
 /** @typedef {typeof CLIENT_ERROR_CODES[keyof typeof CLIENT_ERROR_CODES]} ClientErrorCode */
+
+/**
+ * Тексты уведомлений о недоступном устройстве (TDD §8.2). Формулировки разные для камеры и
+ * микрофона: «устройство недоступно» не подсказывает, что именно чинить.
+ */
+const DEVICE_ERROR_MESSAGES = Object.freeze({
+  [TRACK_STATUS.DENIED]: Object.freeze({
+    audio: 'Нет доступа к микрофону. Разрешите доступ в настройках браузера',
+    video: 'Нет доступа к камере. Разрешите доступ в настройках браузера',
+  }),
+  [TRACK_STATUS.NOT_FOUND]: Object.freeze({
+    audio: 'Микрофон не найден',
+    video: 'Камера не найдена',
+  }),
+  [TRACK_STATUS.BUSY]: Object.freeze({
+    audio: 'Микрофон используется другим приложением',
+    video: 'Камера используется другим приложением',
+  }),
+  [TRACK_STATUS.ERROR]: Object.freeze({
+    audio: 'Не удалось включить микрофон',
+    video: 'Не удалось включить камеру',
+  }),
+});
+
+/**
+ * Текст toast о недоступном устройстве (TDD §8.2).
+ * @param {'audio'|'video'} kind
+ * @param {TrackStatus|null} status
+ * @returns {string|null}  `null` для `ok` и неизвестного статуса — сообщать нечего
+ */
+export function deviceErrorMessage(kind, status) {
+  return DEVICE_ERROR_MESSAGES[status]?.[kind] ?? null;
+}
+
+/** Устройство пропало во время звонка (FR-20, TDD §8.2). */
+export const DEVICE_LOST_MESSAGE = 'Устройство отключено';
