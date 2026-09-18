@@ -16,6 +16,8 @@
     "dev": "concurrently --names server,client --prefix-colors blue,green npm:server:dev npm:client:dev",
     "server:dev": "node --watch server/src/index.js",
     "client:dev": "npm run dev --workspace @vcr/client",
+    "build": "npm run build --workspace @vcr/client",
+    "start": "node server/src/index.js",
     "lint": "eslint .",
     "format": "prettier --write .",
     "format:check": "prettier --check .",

@@ -367,7 +367,7 @@ flowchart LR
   - Сборка одним процессом и автоматические браузерные сценарии E-1…E-10 в Chromium с fake media.
   - _Requirements: US-1…US-13 (сквозные сценарии), Design: 11.4, 12.1, 12.2_
 
-  - [ ] 9.1 Prod-like сборка и запуск — **0.5 д**
+  - [x] 9.1 Prod-like сборка и запуск — **0.5 д**
     - `build` = `vite build` (`client/dist`); `start` = `node server/src/index.js` (серверу сборка не нужна); сервер отдаёт `client/dist`.
     - HTTPS при заданных `SSL_CERT_PATH` / `SSL_KEY_PATH`; проверка на `https://<LAN-IP>:3000` с сертификатом mkcert.
     - DoD: после `npm run build && npm start` звонок работает из двух браузеров на разных машинах в LAN.
