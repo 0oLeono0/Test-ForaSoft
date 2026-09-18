@@ -342,7 +342,7 @@ flowchart LR
     - Зависит от: 8.3.
     - _Requirements: FR-10, US-6, US-11, Design: 3.2, 4.1.3, 7.2, 8.3_
 
-  - [ ] 8.5 `RoomSession`, часть 2: подключение медиа и mesh — **1 д**
+  - [x] 8.5 `RoomSession`, часть 2: подключение медиа и mesh — **1 д**
     - После `JOIN_OK` **параллельно**: `mesh.connectTo(participants)` сразу с `null`-треками и `acquire()` → `LOCAL_MEDIA` → `broadcastTrack` → `media:state`. Offer не ждёт диалога разрешений (Design 4.1.2, 7.2). Входящий `signal` → `mesh.handleSignal`; `participant:left` → `removePeer`; `signal:error PEER_NOT_FOUND` → `removePeer`.
     - `toggleMic` / `toggleCamera` → `MediaManager` → `broadcastTrack` → `media:state`; потеря устройства → toast «Устройство отключено» + `media:state`; toasts для `DENIED` / `BUSY` / `NOT_FOUND`.
     - `LINK_STATUS` в reducer; `getStream(peerId)` для плиток; при `leave` / `CONNECTION_LOST` / `destroy` — `closeAll()` и `dispose()`.

@@ -55,7 +55,7 @@ function JoinScreen({ phase, error, waiting, onSubmit }) {
 export default function RoomPage() {
   const { roomId } = useParams();
   const navigate = useNavigate();
-  const { state, dispatch, sessionRef } = useRoomSession(roomId);
+  const { state, dispatch, session } = useRoomSession(roomId);
   // Пользователь пришёл с главной: имя уже в памяти, форма не показывается (TDD §4.1.1).
   const [waitingWithoutForm, setWaitingWithoutForm] = useState(() => sessionName.get() !== null);
 
@@ -67,7 +67,7 @@ export default function RoomPage() {
   /** @param {string} name  нормализованное имя из `NameForm` */
   function handleNameSubmit(name) {
     sessionName.set(name);
-    sessionRef.current?.start({ roomId, name });
+    session?.start({ roomId, name });
   }
 
   /** «Повторить вход» после «Комната заполнена» и «Повторить» после «Сервер недоступен». */
@@ -77,7 +77,7 @@ export default function RoomPage() {
       handleRejoin();
       return;
     }
-    sessionRef.current?.start({ roomId, name });
+    session?.start({ roomId, name });
   }
 
   /** «Войти заново» после обрыва: новый вход начинается с имени (FR-31, TDD §4.1.2). */
@@ -94,11 +94,11 @@ export default function RoomPage() {
     return handleRetry;
   }
 
-  // Потоки появятся вместе с mesh (задача 8.5): пока плитки показывают имена и индикаторы.
+  // Потоки живут в сервисах, а не в reducer: `MediaStream` не сериализуется (TDD §4.1.6).
   const tiles = state.participants.map((participant) => ({
     id: participant.id,
     name: participant.name,
-    stream: null,
+    stream: session?.getStream(participant.id) ?? null,
     audio: participant.audio,
     video: participant.video,
     isSelf: participant.id === state.selfId,
@@ -139,11 +139,9 @@ export default function RoomPage() {
             video={state.local.video}
             audioStatus={state.local.audioStatus}
             videoStatus={state.local.videoStatus}
-            // Тумблеры подключаются вместе с `MediaManager` (задача 8.5): локальных треков
-            // пока нет, переключать нечего.
-            onToggleMic={noop}
-            onToggleCamera={noop}
-            onLeave={() => sessionRef.current?.leave()}
+            onToggleMic={() => session?.toggleMic()}
+            onToggleCamera={() => session?.toggleCamera()}
+            onLeave={() => session?.leave()}
           />
         }
         sidebar={
@@ -153,8 +151,8 @@ export default function RoomPage() {
                 получен — фаза `inRoom` наступает только после `JOIN_OK`. */}
             <ChatPanel
               messages={state.messages}
-              onSend={(text) => sessionRef.current.sendMessage(text)}
-              maxLength={sessionRef.current?.limits.messageMaxLength}
+              onSend={(text) => session.sendMessage(text)}
+              maxLength={session?.limits.messageMaxLength}
             />
           </>
         }
@@ -164,5 +162,3 @@ export default function RoomPage() {
     );
   }
 }
-
-function noop() {}

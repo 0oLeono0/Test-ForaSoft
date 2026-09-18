@@ -52,10 +52,13 @@ function splitStream(stream, kinds) {
 
 export class MediaManager {
   #mediaDevices;
+  #createMediaStream;
   /** @type {Record<TrackKind, MediaStreamTrack|null>} */
   #tracks = { audio: null, video: null };
   /** @type {Record<TrackKind, TrackStatus|null>} */
   #statuses = { audio: null, video: null };
+  /** @type {MediaStream|null} поток своей плитки; живёт до конца сессии */
+  #localStream = null;
   /** @type {Set<(kind: TrackKind, track: MediaStreamTrack|null) => void>} */
   #trackChangeHandlers = new Set();
   /** @type {Set<(kind: TrackKind) => void>} */
@@ -65,9 +68,26 @@ export class MediaManager {
   /**
    * @param {Object} [deps]
    * @param {MediaDevices} [deps.mediaDevices]  в тестах — мок с `enumerateDevices`/`getUserMedia`
+   * @param {(tracks: MediaStreamTrack[]) => MediaStream} [deps.createMediaStream]
    */
-  constructor({ mediaDevices } = {}) {
+  constructor({ mediaDevices, createMediaStream } = {}) {
     this.#mediaDevices = mediaDevices ?? navigator.mediaDevices;
+    this.#createMediaStream = createMediaStream ?? ((tracks) => new MediaStream(tracks));
+  }
+
+  /**
+   * Поток для своей плитки (TDD §4.1.5). Объект один на всю сессию, а дорожки в нём меняются:
+   * так `<video>` не приходится перепривязывать на каждый щелчок тумблера.
+   * @returns {MediaStream}
+   */
+  get localStream() {
+    if (this.#localStream === null) {
+      const tracks = TRACK_KINDS.map((kind) => this.#tracks[kind]).filter(
+        (track) => track !== null,
+      );
+      this.#localStream = this.#createMediaStream(tracks);
+    }
+    return this.#localStream;
   }
 
   /**
@@ -270,6 +290,7 @@ export class MediaManager {
     if (previous !== null && previous !== track) previous.onended = null;
     this.#tracks[kind] = track;
     if (track !== null) track.onended = () => this.#handleDeviceLost(kind, track);
+    this.#syncLocalStream(kind, track);
   }
 
   /** @param {TrackKind} kind */
@@ -279,6 +300,22 @@ export class MediaManager {
     track.onended = null;
     track.stop();
     this.#tracks[kind] = null;
+    this.#syncLocalStream(kind, null);
+  }
+
+  /**
+   * Своя плитка показывает ровно текущие дорожки: остановленную видеодорожку нужно убрать,
+   * иначе `<video>` замрёт на последнем кадре вместо силуэта.
+   * @param {TrackKind} kind
+   * @param {MediaStreamTrack|null} track
+   */
+  #syncLocalStream(kind, track) {
+    // Потока ещё не спрашивали — он соберётся из текущих дорожек при первом обращении.
+    if (this.#localStream === null) return;
+    for (const existing of this.#localStream.getTracks()) {
+      if (existing.kind === kind) this.#localStream.removeTrack(existing);
+    }
+    if (track !== null) this.#localStream.addTrack(track);
   }
 
   /**
@@ -291,6 +328,7 @@ export class MediaManager {
     if (this.#tracks[kind] !== track) return;
     track.onended = null;
     this.#tracks[kind] = null;
+    this.#syncLocalStream(kind, null);
     this.#emitTrackChange(kind, null);
     for (const handler of [...this.#deviceLostHandlers]) handler(kind);
   }

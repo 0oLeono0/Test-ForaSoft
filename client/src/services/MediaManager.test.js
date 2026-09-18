@@ -50,17 +50,32 @@ function createMediaDevices({ devices = ['audioinput', 'videoinput'], responses 
   };
 }
 
+/** `MediaStream` в jsdom нет: подменяем набором дорожек с тем же интерфейсом. */
+function createStreamFactory() {
+  return vi.fn((initial) => {
+    let tracks = [...initial];
+    return {
+      getTracks: () => [...tracks],
+      addTrack: (track) => tracks.push(track),
+      removeTrack: (track) => {
+        tracks = tracks.filter((candidate) => candidate !== track);
+      },
+    };
+  });
+}
+
 /** Захватил оба устройства и подписан на изменения дорожек — состояние после успешного входа. */
 async function acquired(options) {
   const mediaDevices = createMediaDevices(options);
-  const manager = new MediaManager({ mediaDevices });
+  const createMediaStream = createStreamFactory();
+  const manager = new MediaManager({ mediaDevices, createMediaStream });
   const onTrackChange = vi.fn();
   const onDeviceLost = vi.fn();
   manager.onTrackChange(onTrackChange);
   manager.onDeviceLost(onDeviceLost);
   const initial = await manager.acquire();
 
-  return { manager, mediaDevices, onTrackChange, onDeviceLost, initial };
+  return { manager, mediaDevices, createMediaStream, onTrackChange, onDeviceLost, initial };
 }
 
 describe('MediaManager.acquire: первичный захват (TDD §4.1.4)', () => {
@@ -361,6 +376,37 @@ describe('MediaManager: потеря устройства (FR-20, TDD §8.2)', (
     initial.audio.track.end();
 
     expect(handler).not.toHaveBeenCalled();
+  });
+});
+
+describe('MediaManager.localStream: поток своей плитки (TDD §4.1.5)', () => {
+  it('собирается из захваченных дорожек', async () => {
+    const { manager, initial } = await acquired();
+
+    expect(manager.localStream.getTracks()).toEqual([initial.audio.track, initial.video.track]);
+  });
+
+  it('объект один и тот же, а дорожки в нём меняются вслед за тумблерами', async () => {
+    const { manager, createMediaStream } = await acquired();
+    const stream = manager.localStream;
+
+    await manager.setVideoEnabled(false);
+    expect(stream.getTracks().map(({ kind }) => kind)).toEqual(['audio']);
+
+    await manager.setVideoEnabled(true);
+    expect(stream.getTracks().map(({ kind }) => kind)).toEqual(['audio', 'video']);
+    // `<video>` не перепривязывается: srcObject остаётся прежним.
+    expect(manager.localStream).toBe(stream);
+    expect(createMediaStream).toHaveBeenCalledTimes(1);
+  });
+
+  it('потерянное устройство уходит из потока (FR-20)', async () => {
+    const { manager, initial } = await acquired();
+    const stream = manager.localStream;
+
+    initial.video.track.end();
+
+    expect(stream.getTracks()).toEqual([initial.audio.track]);
   });
 });
 
