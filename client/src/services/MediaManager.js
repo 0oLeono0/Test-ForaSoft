@@ -56,6 +56,11 @@ export class MediaManager {
   #tracks = { audio: null, video: null };
   /** @type {Record<TrackKind, TrackStatus|null>} */
   #statuses = { audio: null, video: null };
+  /** @type {Set<(kind: TrackKind, track: MediaStreamTrack|null) => void>} */
+  #trackChangeHandlers = new Set();
+  /** @type {Set<(kind: TrackKind) => void>} */
+  #deviceLostHandlers = new Set();
+  #disposed = false;
 
   /**
    * @param {Object} [deps]
@@ -81,9 +86,46 @@ export class MediaManager {
 
     for (const kind of TRACK_KINDS) {
       this.#statuses[kind] = result[kind].status;
-      this.#setTrack(kind, result[kind].track);
+      // Сессия закончилась, пока шёл диалог разрешений: дорожки нужно освободить сразу.
+      if (this.#disposed) result[kind].track?.stop();
+      else this.#setTrack(kind, result[kind].track);
     }
     return result;
+  }
+
+  /**
+   * Тумблер микрофона (FR-15, TDD §4.1.4). Выключение оставляет дорожку живой и передаёт пирам
+   * тишину: повторное согласование SDP не нужно, а индикатор у остальных гасит `media:state`.
+   * Если дорожки нет (отказ, устройство потеряно), включение пробует захватить её заново.
+   * @param {boolean} enabled
+   * @returns {Promise<TrackStatus|null>}  итоговый статус устройства (`null` — захвата не было)
+   */
+  async setAudioEnabled(enabled) {
+    const track = this.#tracks.audio;
+    if (track !== null) {
+      track.enabled = enabled;
+      return this.#statuses.audio;
+    }
+    if (!enabled || this.#disposed) return this.#statuses.audio;
+    return this.#recapture('audio');
+  }
+
+  /**
+   * Тумблер камеры (FR-17, FR-19, TDD §4.1.4, §7.4). Выключение останавливает дорожку —
+   * только так гаснет аппаратный индикатор; включение захватывает новую.
+   * @param {boolean} enabled
+   * @returns {Promise<TrackStatus|null>}  `OK` — камера включена, иначе причина отказа (§8.2)
+   */
+  async setVideoEnabled(enabled) {
+    if (!enabled) {
+      if (this.#tracks.video !== null) {
+        this.#stopTrack('video');
+        this.#emitTrackChange('video', null);
+      }
+      return this.#statuses.video;
+    }
+    if (this.#tracks.video !== null || this.#disposed) return this.#statuses.video;
+    return this.#recapture('video');
   }
 
   /**
@@ -101,6 +143,47 @@ export class MediaManager {
    */
   getStatus(kind) {
     return this.#statuses[kind] ?? null;
+  }
+
+  /**
+   * Состояние тумблеров для `media:state` и своей плитки (TDD §6.3). Микрофон выключается
+   * флагом `enabled`, камера — остановкой дорожки, поэтому проверки разные.
+   * @returns {{ audio: boolean, video: boolean }}
+   */
+  getMediaState() {
+    return {
+      audio: this.#tracks.audio !== null && this.#tracks.audio.enabled !== false,
+      video: this.#tracks.video !== null,
+    };
+  }
+
+  /**
+   * Новая локальная дорожка (или её исчезновение) — для `PeerMesh.broadcastTrack` (TDD §7.4).
+   * @param {(kind: TrackKind, track: MediaStreamTrack|null) => void} handler
+   * @returns {() => void} отписка
+   */
+  onTrackChange(handler) {
+    this.#trackChangeHandlers.add(handler);
+    return () => this.#trackChangeHandlers.delete(handler);
+  }
+
+  /**
+   * Устройство пропало во время звонка (FR-20, TDD §8.2): отключили камеру, выдернули гарнитуру.
+   * @param {(kind: TrackKind) => void} handler
+   * @returns {() => void} отписка
+   */
+  onDeviceLost(handler) {
+    this.#deviceLostHandlers.add(handler);
+    return () => this.#deviceLostHandlers.delete(handler);
+  }
+
+  /** Конец сессии (TDD §7.6): дорожки останавливаются, поздние колбэки уже никому не нужны. */
+  dispose() {
+    if (this.#disposed) return;
+    this.#disposed = true;
+    for (const kind of TRACK_KINDS) this.#stopTrack(kind);
+    this.#trackChangeHandlers.clear();
+    this.#deviceLostHandlers.clear();
   }
 
   /** Список устройств: отсутствующий вид не запрашивается и считается `NOT_FOUND`. */
@@ -138,6 +221,26 @@ export class MediaManager {
   }
 
   /**
+   * Повторный захват по нажатию тумблера. Неудача состояние не меняет: дорожки как не было,
+   * так и нет, а причину покажет toast (TDD §7.4).
+   * @param {TrackKind} kind
+   * @returns {Promise<TrackStatus>}
+   */
+  async #recapture(kind) {
+    const { status, track } = await this.#captureOne(kind);
+    this.#statuses[kind] = status;
+    if (track === null) return status;
+    // `dispose` во время диалога разрешений: дорожка родилась уже ненужной.
+    if (this.#disposed) {
+      track.stop();
+      return status;
+    }
+    this.#setTrack(kind, track);
+    this.#emitTrackChange(kind, track);
+    return status;
+  }
+
+  /**
    * @param {TrackKind} kind
    * @returns {Promise<TrackResult>}
    */
@@ -162,6 +265,42 @@ export class MediaManager {
    * @param {MediaStreamTrack|null} track
    */
   #setTrack(kind, track) {
+    const previous = this.#tracks[kind];
+    // Дорожку заменяем осознанно — её `ended` больше не новость.
+    if (previous !== null && previous !== track) previous.onended = null;
     this.#tracks[kind] = track;
+    if (track !== null) track.onended = () => this.#handleDeviceLost(kind, track);
+  }
+
+  /** @param {TrackKind} kind */
+  #stopTrack(kind) {
+    const track = this.#tracks[kind];
+    if (track === null) return;
+    track.onended = null;
+    track.stop();
+    this.#tracks[kind] = null;
+  }
+
+  /**
+   * Устройство пропало само (FR-20). Статус остаётся прежним: устройство могли вернуть на
+   * место, и кнопка должна остаться доступной для повторной попытки.
+   * @param {TrackKind} kind
+   * @param {MediaStreamTrack} track  дорожка, которая закончилась; её могли уже заменить
+   */
+  #handleDeviceLost(kind, track) {
+    if (this.#tracks[kind] !== track) return;
+    track.onended = null;
+    this.#tracks[kind] = null;
+    this.#emitTrackChange(kind, null);
+    for (const handler of [...this.#deviceLostHandlers]) handler(kind);
+  }
+
+  /**
+   * @param {TrackKind} kind
+   * @param {MediaStreamTrack|null} track
+   */
+  #emitTrackChange(kind, track) {
+    // Копия: обработчик вправе отписаться прямо во время вызова.
+    for (const handler of [...this.#trackChangeHandlers]) handler(kind, track);
   }
 }

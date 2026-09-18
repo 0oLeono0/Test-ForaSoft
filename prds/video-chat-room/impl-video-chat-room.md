@@ -318,7 +318,7 @@ flowchart LR
     - Зависит от: 6.2.
     - _Requirements: FR-13, FR-14, FR-33, US-6, US-12, Design: 4.1.4, 8.2_
 
-  - [ ] 8.2 `MediaManager`: тумблеры, потеря устройства, освобождение — **1 д**
+  - [x] 8.2 `MediaManager`: тумблеры, потеря устройства, освобождение — **1 д**
     - `setAudioEnabled`: `track.enabled`, а если трека нет — захват микрофона.
     - `setVideoEnabled(false)`: `track.stop()` (аппаратный индикатор гаснет); `setVideoEnabled(true)`: новый `getUserMedia({ video })`, ошибка → статус трека (`DENIED` / `NOT_FOUND` / `BUSY` / `ERROR`).
     - `onended` трека → `onDeviceLost(kind)`; `onTrackChange(kind, track | null)` для mesh; `dispose()` останавливает все треки.
