@@ -335,7 +335,7 @@ flowchart LR
     - Зависит от: 2.2.
     - _Requirements: FR-10, FR-34, US-6, Design: 3.2, 4.1.4, 7.2_
 
-  - [ ] 8.4 `PeerMesh`: реестр соединений — **0.5 д**
+  - [x] 8.4 `PeerMesh`: реестр соединений — **0.5 д**
     - `connectTo(peerIds)` — создать offerer для каждого участника из снимка; `handleSignal(from, data)` — answerer на offer от неизвестного пира, маршрутизация answer и candidate, игнор сигналов от ушедших; защитное пересоздание при повторном offer.
     - `removePeer`, `broadcastTrack(kind, track)`, `closeAll()`, `getStream(peerId)`, события статуса.
     - Unit-тесты с фабрикой-моком `PeerLink`: роли offerer/answerer; сигнал от неизвестного `from` после выхода игнорируется; `broadcastTrack` доходит до всех.
