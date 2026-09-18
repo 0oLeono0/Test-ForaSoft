@@ -290,7 +290,7 @@ flowchart LR
     - Зависит от: 2.2, 6.1.
     - _Requirements: FR-31, FR-35, FR-36, US-13, Design: 4.1.3, 6.2, 8.2_
 
-  - [ ] 7.2 `RoomSession`, часть 1: вход, события, чат, выход — **1 д**
+  - [x] 7.2 `RoomSession`, часть 1: вход, события, чат, выход — **1 д**
     - `start({ roomId, name })`: `checkSupport` → `connect` → `join` → `JOIN_OK` / `JOIN_FAILED`.
     - Подписки: `participant:joined` / `left` / `media`, `chat:message` → действия reducer.
     - `sendMessage(text)` (ошибки ack → toast), `leave()` (ack → `disconnect` → `LEFT`), обработка неожиданного `disconnect` → `CONNECTION_LOST`, `destroy()` снимает все подписки.
