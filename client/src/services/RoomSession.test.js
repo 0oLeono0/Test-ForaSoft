@@ -61,7 +61,7 @@ function createSignalingMock() {
 }
 
 function localTrack(kind) {
-  return { kind, id: `local-${kind}`, enabled: true };
+  return { kind, id: `local-${kind}`, enabled: true, readyState: 'live' };
 }
 
 /** Оба устройства доступны — обычный исход `acquire()`. */
@@ -113,6 +113,8 @@ function createMediaMock() {
     }),
     setVideoEnabled: vi.fn(async (enabled) => {
       if (!enabled) {
+        // Настоящий MediaManager останавливает дорожку: аппаратный индикатор гаснет (FR-19).
+        if (tracks.video !== null) tracks.video.readyState = 'ended';
         tracks.video = null;
         media.emitTrackChange('video', null);
         return statuses.video;
@@ -726,6 +728,27 @@ describe('RoomSession: маршрутизация сигналинга (TDD §7.
     const { session } = setup();
 
     expect(session.getStream(MARIA.id)).toBeNull();
+  });
+
+  it('getLocalTracks показывает и остановленную дорожку (TDD §11.4, сценарий E-4)', async () => {
+    const { session } = setup();
+    await session.start({ roomId: ROOM_ID, name: 'Алекс' });
+    await settle();
+    expect(session.getLocalTracks()).toEqual({
+      audio: { readyState: 'live', enabled: true },
+      video: { readyState: 'live', enabled: true },
+    });
+
+    await session.toggleCamera();
+
+    // Дорожка освобождена — по этому E2E убеждается, что лампочка камеры погасла (FR-19).
+    expect(session.getLocalTracks().video).toEqual({ readyState: 'ended', enabled: true });
+  });
+
+  it('getLocalTracks до захвата устройств пуст', () => {
+    const { session } = setup();
+
+    expect(session.getLocalTracks()).toEqual({ audio: null, video: null });
   });
 });
 

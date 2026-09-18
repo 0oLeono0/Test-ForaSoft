@@ -50,6 +50,8 @@ export class RoomSession {
   #mesh = null;
   /** Тумблеры, у которых ещё не закончился `getUserMedia`: второй щелчок пропускаем. */
   #pendingToggles = new Set();
+  /** Последняя дорожка каждого вида, включая остановленную, — только для `getLocalTracks`. */
+  #lastLocalTracks = { audio: null, video: null };
 
   /**
    * @param {Object} deps
@@ -162,6 +164,22 @@ export class RoomSession {
   }
 
   /**
+   * Состояние локальных дорожек для дев-хука `window.__vcr` (TDD §11.4). Отдаётся последняя
+   * дорожка каждого вида, даже остановленная: по её `readyState === 'ended'` E2E убеждается,
+   * что выключение камеры действительно освободило устройство (FR-19, сценарий E-4).
+   * @returns {Record<string, { readyState: string, enabled: boolean }|null>}
+   */
+  getLocalTracks() {
+    const snapshot = {};
+    for (const kind of TRACK_KINDS) {
+      const track = this.#lastLocalTracks[kind];
+      snapshot[kind] =
+        track === null ? null : { readyState: track.readyState, enabled: track.enabled };
+    }
+    return snapshot;
+  }
+
+  /**
    * Отправка сообщения. Своё сообщение приходит броадкастом и отрисовывается оттуда, поэтому
    * ack нужен только для подтверждения и ошибок (TDD §6.4).
    * @param {string} text
@@ -269,7 +287,10 @@ export class RoomSession {
       this.#dispatch({ type: ACTIONS.LINK_STATUS, peerId, status });
     });
     // Новая или пропавшая дорожка расходится по парам без повторного согласования (TDD §7.4).
-    this.#media.onTrackChange((kind, track) => this.#mesh?.broadcastTrack(kind, track));
+    this.#media.onTrackChange((kind, track) => {
+      if (track !== null) this.#lastLocalTracks[kind] = track;
+      this.#mesh?.broadcastTrack(kind, track);
+    });
     this.#media.onDeviceLost(() => {
       showToast(DEVICE_LOST_MESSAGE);
       this.#publishLocalMedia();
@@ -286,7 +307,10 @@ export class RoomSession {
     // Пока шёл диалог разрешений, из комнаты могли выйти: дорожки уже остановил `dispose`.
     if (this.#media !== media || !this.#inRoom) return;
 
-    for (const kind of TRACK_KINDS) this.#mesh.broadcastTrack(kind, media.getTrack(kind));
+    for (const kind of TRACK_KINDS) {
+      this.#lastLocalTracks[kind] = media.getTrack(kind);
+      this.#mesh.broadcastTrack(kind, this.#lastLocalTracks[kind]);
+    }
     this.#publishLocalMedia();
     // Отказ и занятое устройство из комнаты не выбрасывают — только объясняют (FR-33, §8.2).
     for (const kind of TRACK_KINDS) this.#notifyDeviceError(kind, result[kind].status);

@@ -13,6 +13,7 @@ import { unlockMediaElements } from '../hooks/useMediaElement.js';
 import { useRoomSession } from '../hooks/useRoomSession.js';
 import { ACTIONS, PHASES } from '../state/roomReducer.js';
 import * as sessionName from '../state/sessionName.js';
+import { installTestHook } from '../utils/testHook.js';
 import './RoomPage.css';
 
 /** Фазы до входа в комнату: на экране форма имени или ожидание (TDD §4.1.2). */
@@ -65,6 +66,9 @@ export default function RoomPage() {
     // «Выйти» доводит до главной уже после того, как сессия попрощалась с сервером (TDD §7.6).
     if (state.phase === PHASES.LEFT) navigate('/');
   }, [state.phase, navigate]);
+
+  // Дев-хук для E2E: в обычной сборке `installTestHook` ничего не делает (TDD §11.4).
+  useEffect(() => installTestHook({ state, session }), [state, session]);
 
   /** @param {string} name  нормализованное имя из `NameForm` */
   function handleNameSubmit(name) {
