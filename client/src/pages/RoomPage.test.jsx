@@ -74,9 +74,12 @@ function joinOk(session, participants = [MARIA]) {
 
 beforeEach(() => {
   sessions.length = 0;
+  // jsdom не воспроизводит медиа: без заглушки play() пишет в консоль «not implemented».
+  HTMLMediaElement.prototype.play = vi.fn().mockResolvedValue(undefined);
 });
 
 afterEach(() => {
+  delete HTMLMediaElement.prototype.play;
   sessionName.clear();
   clearToasts();
 });
@@ -183,6 +186,20 @@ describe('RoomPage: экран комнаты', () => {
 
     expect(session().getStream).toHaveBeenCalledWith(SELF.id);
     expect(session().getStream).toHaveBeenCalledWith(MARIA.id);
+  });
+
+  it('autoplay заблокирован: баннер появляется и уходит после клика (FR-37, US-13)', async () => {
+    sessionName.set('Алекс');
+    const { user, session } = setup();
+    joinOk(session());
+    const unlock = () => screen.queryByRole('button', { name: 'Включить звук' });
+    expect(unlock()).not.toBeInTheDocument();
+
+    emit(session(), { type: ACTIONS.AUDIO_LOCKED, locked: true });
+    expect(unlock()).toBeInTheDocument();
+
+    await user.click(unlock());
+    await waitFor(() => expect(unlock()).not.toBeInTheDocument());
   });
 
   it('«Выйти» прощается с сервером и уводит на главную (FR-27, US-10)', async () => {

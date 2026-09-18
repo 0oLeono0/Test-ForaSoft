@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
+import AudioUnlockBanner from '../components/AudioUnlockBanner.jsx';
 import ChatPanel from '../components/ChatPanel.jsx';
 import ControlsBar from '../components/ControlsBar.jsx';
 import NameForm from '../components/NameForm.jsx';
@@ -8,6 +9,7 @@ import RoomLayout from '../components/RoomLayout.jsx';
 import StatusScreen from '../components/StatusScreen.jsx';
 import Toasts from '../components/Toasts.jsx';
 import VideoGrid from '../components/VideoGrid.jsx';
+import { unlockMediaElements } from '../hooks/useMediaElement.js';
 import { useRoomSession } from '../hooks/useRoomSession.js';
 import { ACTIONS, PHASES } from '../state/roomReducer.js';
 import * as sessionName from '../state/sessionName.js';
@@ -87,6 +89,17 @@ export default function RoomPage() {
     dispatch({ type: ACTIONS.PHASE, phase: PHASES.NAME_FORM });
   }
 
+  /** Браузер отклонил автозапуск со звуком: нужен жест пользователя (FR-37, TDD §8.2). */
+  function handleAutoplayBlocked() {
+    dispatch({ type: ACTIONS.AUDIO_LOCKED, locked: true });
+  }
+
+  /** Клик по баннеру и есть тот жест: запускаем все плитки разом и убираем баннер. */
+  async function handleUnlockAudio() {
+    await unlockMediaElements();
+    dispatch({ type: ACTIONS.AUDIO_LOCKED, locked: false });
+  }
+
   /** Действие экрана состояния: у `unsupported` и `insecureContext` кнопки нет (TDD §4.1.5). */
   function statusAction() {
     if (state.phase === PHASES.CONNECTION_LOST) return handleRejoin;
@@ -157,7 +170,8 @@ export default function RoomPage() {
           </>
         }
       >
-        <VideoGrid tiles={tiles} />
+        <VideoGrid tiles={tiles} onAutoplayBlocked={handleAutoplayBlocked} />
+        <AudioUnlockBanner visible={state.audioLocked} onUnlock={handleUnlockAudio} />
       </RoomLayout>
     );
   }

@@ -1,6 +1,26 @@
 import { useEffect, useRef } from 'react';
 
 /**
+ * Живые медиаэлементы плиток. Баннер «Включить звук» запускает их все разом: жест пользователя
+ * снимает autoplay-блокировку сразу для всей страницы (FR-37, TDD §4.1.5).
+ * @type {Set<HTMLMediaElement>}
+ */
+const mediaElements = new Set();
+
+/**
+ * Повторный `play()` для всех плиток после клика по баннеру (FR-37).
+ * @returns {Promise<void>}
+ */
+export async function unlockMediaElements() {
+  await Promise.all(
+    [...mediaElements].map((element) =>
+      // Плитка могла остаться без потока — такой `play()` отклоняется, и это не ошибка.
+      Promise.resolve(element.play?.()).catch(() => {}),
+    ),
+  );
+}
+
+/**
  * Привязывает поток к `<video>`: `srcObject`, запуск воспроизведения и очистка (TDD §4.1.5).
  *
  * `autoPlay` в разметке не всегда срабатывает: браузер может отклонить запуск со звуком до жеста
@@ -24,6 +44,7 @@ export function useMediaElement(stream = null, onAutoplayBlocked) {
     const element = ref.current;
     if (element === null) return undefined;
 
+    mediaElements.add(element);
     element.srcObject = stream;
     let released = false;
 
@@ -37,6 +58,7 @@ export function useMediaElement(stream = null, onAutoplayBlocked) {
 
     return () => {
       released = true;
+      mediaElements.delete(element);
       // Отвязываем поток: иначе элемент держит дорожки после размонтирования плитки.
       element.srcObject = null;
     };
