@@ -283,7 +283,7 @@ flowchart LR
   - Подключение к серверу, конечный автомат входа, чат и список участников end-to-end. **Итог — веха M1.**
   - _Requirements: FR-4…FR-9, FR-21, FR-25…FR-28, FR-31, FR-35, FR-36, Design: 4.1.2, 4.1.3, 6.2–6.4, 7.1, 7.6, 8.2_
 
-  - [ ] 7.1 `environment` и `SignalingClient` — **1 д**
+  - [x] 7.1 `environment` и `SignalingClient` — **1 д**
     - `environment.js`: `checkSupport()` проверяет **сначала** `isSecureContext` → `INSECURE_CONTEXT`, **затем** `RTCPeerConnection` и `mediaDevices.getUserMedia` → `WEBRTC_UNSUPPORTED` (в незащищённом контексте `mediaDevices` нет даже в поддерживаемом браузере, §4.1.2). Unit-тест на порядок.
     - `SignalingClient` поверх `socket.io-client` (имена событий из `@vcr/shared/events.js`): `io({ reconnection: false, timeout: 5000, autoConnect: false })`; `connect()` с таймаутом → `SERVER_UNAVAILABLE`; `join`/`leave`/`sendChat` через `emitWithAck` с таймаутом; `sendMediaState`, `sendSignal`; `on()` возвращает функцию отписки; событие `disconnected(reason)` с признаком «по инициативе клиента».
     - Unit-тесты на мок-сокете: таймаут подключения, ошибка ack, отписка, различение причин disconnect.
