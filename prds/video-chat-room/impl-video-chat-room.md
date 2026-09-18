@@ -279,18 +279,18 @@ flowchart LR
     - Зависит от: 6.2, 6.3.
     - _Requirements: FR-8, FR-11, FR-12, FR-16, FR-18, US-6, US-12, Design: 4.1.5, 14 (Q-1)_
 
-- [ ] 7. Клиент: сигналинг, сессия и экран комнаты (без WebRTC)
+- [x] 7. Клиент: сигналинг, сессия и экран комнаты (без WebRTC)
   - Подключение к серверу, конечный автомат входа, чат и список участников end-to-end. **Итог — веха M1.**
   - _Requirements: FR-4…FR-9, FR-21, FR-25…FR-28, FR-31, FR-35, FR-36, Design: 4.1.2, 4.1.3, 6.2–6.4, 7.1, 7.6, 8.2_
 
-  - [ ] 7.1 `environment` и `SignalingClient` — **1 д**
+  - [x] 7.1 `environment` и `SignalingClient` — **1 д**
     - `environment.js`: `checkSupport()` проверяет **сначала** `isSecureContext` → `INSECURE_CONTEXT`, **затем** `RTCPeerConnection` и `mediaDevices.getUserMedia` → `WEBRTC_UNSUPPORTED` (в незащищённом контексте `mediaDevices` нет даже в поддерживаемом браузере, §4.1.2). Unit-тест на порядок.
     - `SignalingClient` поверх `socket.io-client` (имена событий из `@vcr/shared/events.js`): `io({ reconnection: false, timeout: 5000, autoConnect: false })`; `connect()` с таймаутом → `SERVER_UNAVAILABLE`; `join`/`leave`/`sendChat` через `emitWithAck` с таймаутом; `sendMediaState`, `sendSignal`; `on()` возвращает функцию отписки; событие `disconnected(reason)` с признаком «по инициативе клиента».
     - Unit-тесты на мок-сокете: таймаут подключения, ошибка ack, отписка, различение причин disconnect.
     - Зависит от: 2.2, 6.1.
     - _Requirements: FR-31, FR-35, FR-36, US-13, Design: 4.1.3, 6.2, 8.2_
 
-  - [ ] 7.2 `RoomSession`, часть 1: вход, события, чат, выход — **1 д**
+  - [x] 7.2 `RoomSession`, часть 1: вход, события, чат, выход — **1 д**
     - `start({ roomId, name })`: `checkSupport` → `connect` → `join` → `JOIN_OK` / `JOIN_FAILED`.
     - Подписки: `participant:joined` / `left` / `media`, `chat:message` → действия reducer.
     - `sendMessage(text)` (ошибки ack → toast), `leave()` (ack → `disconnect` → `LEFT`), обработка неожиданного `disconnect` → `CONNECTION_LOST`, `destroy()` снимает все подписки.
@@ -298,7 +298,7 @@ flowchart LR
     - Зависит от: 6.3, 7.1.
     - _Requirements: FR-4, FR-5, FR-8, FR-9, FR-21, FR-25, FR-26, FR-27, FR-31, US-4, US-9, US-10, US-11, Design: 4.1.3, 6.3, 6.4, 7.6_
 
-  - [ ] 7.3 `RoomPage` и `useRoomSession`: конечный автомат входа — **1 д**
+  - [x] 7.3 `RoomPage` и `useRoomSession`: конечный автомат входа — **1 д**
     - Фазы из §4.1.2: `NameForm` пропускается, если имя есть в `sessionName`; проверка `isValidRoomId` до подключения; `INVALID_NAME` в ack → обратно на `NameForm` с подсказкой; защита от двойного клика; «Повторить вход» для `roomFull` и `serverUnavailable`; «Войти заново» для `connectionLost`; «Выйти» → `navigate('/')`.
     - Сборка экрана: `VideoGrid` (пока только плитки-заглушки), `ControlsBar`, `ParticipantList`, `ChatPanel`, `Toasts`.
     - `pagehide` → best-effort `room:leave`; очистка сессии при размонтировании.

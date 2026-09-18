@@ -18,10 +18,11 @@ describe('App: маршруты', () => {
     expect(screen.getByRole('heading', { name: 'Видеочат-комната' })).toBeInTheDocument();
   });
 
-  it('«/room/:roomId» — экран комнаты с идентификатором из адреса', () => {
+  it('«/room/:roomId» — экран комнаты', () => {
+    // Имени в памяти нет (переход по ссылке-приглашению), поэтому это форма имени (FR-28).
     renderAt('/room/V1StGXR8_Z');
 
-    expect(screen.getByRole('heading', { name: /V1StGXR8_Z/ })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Вход в комнату' })).toBeInTheDocument();
   });
 
   it.each(['/unknown', '/room', '/room/a/b'])('«%s» — редирект на стартовый экран', (path) => {
