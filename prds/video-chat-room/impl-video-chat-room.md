@@ -404,7 +404,7 @@ flowchart LR
   - Автоматизация проверок, лёгкий нагрузочный прогон сигналинга, README для запуска в LAN, ручной чек-лист. **Итог — веха M3.**
   - _Requirements: US-6 (задержка), PRD §6 (1024px), PRD §7, Design: 9.1, 11.5, 11.6, 12.2–12.4, 13_
 
-  - [ ] 10.1 CI на GitHub Actions — **0.5 д**
+  - [x] 10.1 CI на GitHub Actions — **0.5 д**
     - Workflow: `npm ci` → `lint` + `format:check` → `test:coverage` (пороги §11.7) → `test:integration` → `build` → `playwright install chromium` → `test:e2e`; артефакты: coverage, playwright-report, traces.
     - Кэш npm и браузеров Playwright.
     - Зависит от: 5.4, 9.6.
