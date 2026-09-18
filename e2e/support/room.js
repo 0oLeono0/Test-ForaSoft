@@ -113,3 +113,34 @@ export async function waitForPeerConnected(page, count) {
 export function localTracks(page) {
   return page.evaluate(() => window.__vcr.local);
 }
+
+/**
+ * Плитки участников в сетке (FR-11). Своя плитка отмечена модификатором `--self` (TDD §4.1.5).
+ * @param {import('@playwright/test').Page} page
+ */
+export function tiles(page) {
+  return page.locator('.video-tile');
+}
+
+/**
+ * Плитка по подписи в оверлее; своя подписана «имя (Вы)», поэтому подходит и для себя,
+ * и для собеседника.
+ * @param {import('@playwright/test').Page} page
+ * @param {string} name
+ */
+export function tileOf(page, name) {
+  return tiles(page).filter({ has: page.locator('.video-tile__name', { hasText: name }) });
+}
+
+/**
+ * Ширина кадра в `<video>` участника: больше нуля — по соединению действительно идёт видео,
+ * а не только состояние `connected` (US-6).
+ * @param {import('@playwright/test').Page} page
+ * @param {string} name
+ * @returns {Promise<number>}
+ */
+export function videoWidthOf(page, name) {
+  return tileOf(page, name)
+    .locator('video')
+    .evaluate((video) => video.videoWidth);
+}
