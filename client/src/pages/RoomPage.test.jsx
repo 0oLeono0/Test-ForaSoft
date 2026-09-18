@@ -67,6 +67,18 @@ function emit(session, action) {
   act(() => session.dispatch(action));
 }
 
+/** Своя плитка: она одна с модификатором `--self` (TDD §4.1.5). */
+function selfTile() {
+  return document.querySelector('.video-tile--self');
+}
+
+/** Плитка участника по подписи в оверлее. */
+function tileOf(name) {
+  return [...document.querySelectorAll('.video-tile')].find(
+    (tile) => tile.querySelector('.video-tile__name').textContent === name,
+  );
+}
+
 /** Успешный ответ `room:join`. */
 function joinOk(session, participants = [MARIA]) {
   emit(session, { type: ACTIONS.JOIN_OK, roomId: ROOM_ID, self: SELF, participants, messages: [] });
@@ -200,6 +212,66 @@ describe('RoomPage: экран комнаты', () => {
 
     await user.click(unlock());
     await waitFor(() => expect(unlock()).not.toBeInTheDocument());
+  });
+
+  it('свои индикаторы идут за локальным состоянием, а не за ack (FR-16, FR-18)', () => {
+    sessionName.set('Алекс');
+    const { session } = setup();
+    // В ack `room:join` устройства ещё выключены: сервер узнаёт о них позже, из `media:state`.
+    joinOk(session());
+    expect(selfTile().querySelector('.video-tile__placeholder')).not.toBeNull();
+
+    // Захват удался. Своего `participant:media` сервер не присылает (TDD §6.4) — плитка и
+    // строка в списке должны обновиться от `LOCAL_MEDIA`.
+    emit(session(), { type: ACTIONS.LOCAL_MEDIA, local: { audio: true, video: true } });
+
+    expect(selfTile().querySelector('.video-tile__placeholder')).toBeNull();
+    expect(
+      within(selfTile()).queryByRole('img', { name: 'Микрофон выключен' }),
+    ).not.toBeInTheDocument();
+    const selfRow = within(screen.getByRole('region', { name: 'Участники' })).getByText(
+      'Алекс (Вы)',
+    ).parentElement;
+    expect(
+      within(selfRow).queryByRole('img', { name: 'Микрофон выключен' }),
+    ).not.toBeInTheDocument();
+    expect(
+      within(selfRow).queryByRole('img', { name: 'Камера выключена' }),
+    ).not.toBeInTheDocument();
+  });
+
+  it('выключенные свои устройства возвращают силуэт и иконку (FR-16, FR-18, US-7)', () => {
+    sessionName.set('Алекс');
+    const { session } = setup();
+    joinOk(session());
+    emit(session(), { type: ACTIONS.LOCAL_MEDIA, local: { audio: true, video: true } });
+    expect(selfTile().querySelector('.video-tile__placeholder')).toBeNull();
+
+    emit(session(), { type: ACTIONS.LOCAL_MEDIA, local: { audio: false, video: false } });
+
+    expect(selfTile().querySelector('.video-tile__placeholder')).not.toBeNull();
+    expect(within(selfTile()).getByRole('img', { name: 'Микрофон выключен' })).toBeInTheDocument();
+  });
+
+  it('индикаторы остальных идут от сервера, а не от своего состояния (FR-16, FR-18)', () => {
+    sessionName.set('Алекс');
+    const { session } = setup();
+    joinOk(session());
+    // Мария вошла с включёнными устройствами; своё состояние на неё не влияет.
+    emit(session(), { type: ACTIONS.LOCAL_MEDIA, local: { audio: false, video: false } });
+    expect(tileOf('Мария').querySelector('.video-tile__placeholder')).toBeNull();
+
+    emit(session(), {
+      type: ACTIONS.PARTICIPANT_MEDIA,
+      participantId: MARIA.id,
+      audio: false,
+      video: false,
+    });
+
+    expect(tileOf('Мария').querySelector('.video-tile__placeholder')).not.toBeNull();
+    expect(
+      within(tileOf('Мария')).getByRole('img', { name: 'Микрофон выключен' }),
+    ).toBeInTheDocument();
   });
 
   it('«Выйти» прощается с сервером и уводит на главную (FR-27, US-10)', async () => {

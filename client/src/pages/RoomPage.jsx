@@ -111,8 +111,17 @@ export default function RoomPage() {
     return handleRetry;
   }
 
+  // Свои индикаторы берутся из `state.local`: `participant:media` сервер рассылает всем, кроме
+  // отправителя (TDD §6.4), поэтому запись о себе в `participants` так и осталась бы такой,
+  // какой пришла в ack `room:join` — с выключенными устройствами (FR-16, FR-18).
+  const participants = state.participants.map((participant) =>
+    participant.id === state.selfId
+      ? { ...participant, audio: state.local.audio, video: state.local.video }
+      : participant,
+  );
+
   // Потоки живут в сервисах, а не в reducer: `MediaStream` не сериализуется (TDD §4.1.6).
-  const tiles = state.participants.map((participant) => ({
+  const tiles = participants.map((participant) => ({
     id: participant.id,
     name: participant.name,
     stream: session?.getStream(participant.id) ?? null,
@@ -163,7 +172,7 @@ export default function RoomPage() {
         }
         sidebar={
           <>
-            <ParticipantList participants={state.participants} selfId={state.selfId} />
+            <ParticipantList participants={participants} selfId={state.selfId} />
             {/* Предел длины берётся из ack `room:join` (TDD §6.3): к этому рендеру он уже
                 получен — фаза `inRoom` наступает только после `JOIN_OK`. */}
             <ChatPanel
