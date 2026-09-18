@@ -404,19 +404,19 @@ flowchart LR
   - Автоматизация проверок, лёгкий нагрузочный прогон сигналинга, README для запуска в LAN, ручной чек-лист. **Итог — веха M3.**
   - _Requirements: US-6 (задержка), PRD §6 (1024px), PRD §7, Design: 9.1, 11.5, 11.6, 12.2–12.4, 13_
 
-  - [ ] 10.1 CI на GitHub Actions — **0.5 д**
+  - [x] 10.1 CI на GitHub Actions — **0.5 д**
     - Workflow: `npm ci` → `lint` + `format:check` → `test:coverage` (пороги §11.7) → `test:integration` → `build` → `playwright install chromium` → `test:e2e`; артефакты: coverage, playwright-report, traces.
     - Кэш npm и браузеров Playwright.
     - Зависит от: 5.4, 9.6.
     - _Requirements: —, Design: 12.4_
 
-  - [ ] 10.2 Нагрузочный скрипт сигналинга — **0.5 д**
+  - [x] 10.2 Нагрузочный скрипт сигналинга — **0.5 д**
     - `scripts/load-signaling.js` (запуск через `node`): 50 комнат × 4 сокета, по 20 сообщений и 30 фиктивных `signal` на участника; метрики — лишние `ROOM_FULL`, p95 доставки чата, RSS сервера из `/healthz` и `process.memoryUsage`.
     - Результаты записать в `docs/load-test.md`. Критерии: нет лишних `ROOM_FULL`, RSS < 150 МБ, p95 < 50 мс на localhost.
     - Зависит от: 4.6.
     - _Requirements: FR-7, Design: 9.1, 11.5_
 
-  - [ ] 10.3 README — **0.5 д**
+  - [x] 10.3 README — **0.5 д**
     - Требования (Node 20), установка, скрипты, структура монорепозитория.
     - HTTPS в LAN через mkcert: Windows / macOS / Linux, импорт корневого CA на других устройствах, запасной флаг Chrome (с пометкой «не для демо»).
     - Таблица env, ограничения (один процесс, нет TURN, данные в памяти), диагностика (`chrome://webrtc-internals`, изоляция клиентов Wi-Fi).
