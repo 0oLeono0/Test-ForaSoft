@@ -311,7 +311,7 @@ flowchart LR
   - Локальные устройства, P2P-соединения со всеми участниками, тумблеры без повторного согласования, ошибки устройств и autoplay. **Итог — веха M2.**
   - _Requirements: FR-10, FR-13…FR-20, FR-33, FR-34, FR-37, Design: 3.2, 4.1.3, 4.1.4, 7.2, 7.4, 8.2, 8.3_
 
-  - [ ] 8.1 `MediaManager.acquire()`: первичный захват с частичным успехом — **1 д**
+  - [x] 8.1 `MediaManager.acquire()`: первичный захват с частичным успехом — **1 д**
     - `enumerateDevices` → наличие устройств; один запрос `getUserMedia` на оба вида; при ошибке — отдельные запросы на каждый вид.
     - Результат `{ audio: TrackResult, video: TrackResult }`, соответствие ошибок через `mediaErrors`; `VIDEO_CONSTRAINTS` (640×480, 24 fps). Если устройств нет совсем, `getUserMedia` не вызывается.
     - Unit-тесты на моке `navigator.mediaDevices`: всё ok; нет камеры; отказ в доступе; камера занята (`NotReadableError`), а микрофон ok; нет устройств вообще (`getUserMedia` не вызван, оба `NOT_FOUND`).
