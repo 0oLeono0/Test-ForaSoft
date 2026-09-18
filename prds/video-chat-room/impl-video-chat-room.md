@@ -363,7 +363,7 @@ flowchart LR
     - Зависит от: 8.5.
     - _Requirements: —, Design: 11.4, 13 (R-9)_
 
-- [ ] 9. Prod-like сборка и E2E-тесты
+- [x] 9. Prod-like сборка и E2E-тесты
   - Сборка одним процессом и автоматические браузерные сценарии E-1…E-10 в Chromium с fake media.
   - _Requirements: US-1…US-13 (сквозные сценарии), Design: 11.4, 12.1, 12.2_
 
@@ -395,7 +395,7 @@ flowchart LR
     - Зависит от: 9.2.
     - _Requirements: FR-15…FR-19, FR-21…FR-23, FR-39, US-7, US-8, Design: 11.4_
 
-  - [ ] 9.6 E2E: ошибки окружения — **0.5 д**
+  - [x] 9.6 E2E: ошибки окружения — **0.5 д**
     - E-7 (`addInitScript`: `getUserMedia` → `NotAllowedError`; пользователь в комнате, toast), E-8 (нет `RTCPeerConnection` → «WebRTC не поддерживается»), E-9 (`page.routeWebSocket` закрывает WebSocket и `page.route` обрывает polling для `/socket.io` → «Сервер недоступен»; `page.route` сам WebSocket не перехватывает, нужен Playwright ≥ 1.48).
     - Зависит от: 9.2.
     - _Requirements: FR-33, FR-35, FR-36, US-12, US-13, Design: 8.2, 11.4_
