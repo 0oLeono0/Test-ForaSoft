@@ -363,39 +363,39 @@ flowchart LR
     - Зависит от: 8.5.
     - _Requirements: —, Design: 11.4, 13 (R-9)_
 
-- [ ] 9. Prod-like сборка и E2E-тесты
+- [x] 9. Prod-like сборка и E2E-тесты
   - Сборка одним процессом и автоматические браузерные сценарии E-1…E-10 в Chromium с fake media.
   - _Requirements: US-1…US-13 (сквозные сценарии), Design: 11.4, 12.1, 12.2_
 
-  - [ ] 9.1 Prod-like сборка и запуск — **0.5 д**
+  - [x] 9.1 Prod-like сборка и запуск — **0.5 д**
     - `build` = `vite build` (`client/dist`); `start` = `node server/src/index.js` (серверу сборка не нужна); сервер отдаёт `client/dist`.
     - HTTPS при заданных `SSL_CERT_PATH` / `SSL_KEY_PATH`; проверка на `https://<LAN-IP>:3000` с сертификатом mkcert.
     - DoD: после `npm run build && npm start` звонок работает из двух браузеров на разных машинах в LAN.
     - Зависит от: 4.3, 8.5.
     - _Requirements: PRD §7 (HTTPS), Design: 12.1, 12.2, 12.3_
 
-  - [ ] 9.2 Настройка Playwright — **0.5 д**
+  - [x] 9.2 Настройка Playwright — **0.5 д**
     - Папка `e2e/` (`@playwright/test` — devDependency в корне): `playwright.config.js` (Chromium, `--use-fake-ui-for-media-stream`, `--use-fake-device-for-media-stream`, `webServer`: `vite build --mode test` + `node server/src/index.js`, `retries: 1`, trace on failure). Скрипт `build:test`.
     - Хелперы: `createParticipant(browser, name)` (отдельный `browserContext`), `createRoom`, `joinRoom(url)`, `waitForPeerConnected(page, count)` через `window.__vcr`.
     - Зависит от: 8.7, 9.1.
     - _Requirements: —, Design: 11.4_
 
-  - [ ] 9.3 E2E: создание, вход по ссылке, имя, перезагрузка — **0.5 д**
+  - [x] 9.3 E2E: создание, вход по ссылке, имя, перезагрузка — **0.5 д**
     - E-1 (создание, копирование ссылки, второй участник, плитки с именами, `videoWidth > 0`), E-2 (пустое имя), E-10 (перезагрузка → форма имени, у других — выход).
     - Зависит от: 9.2.
     - _Requirements: FR-1…FR-4, FR-11, FR-12, FR-28, US-1…US-4, US-6, US-10, Design: 11.4_
 
-  - [ ] 9.4 E2E: лимит и выход — **0.5 д**
+  - [x] 9.4 E2E: лимит и выход — **0.5 д**
     - E-3 (4 участника + пятый → «Комната заполнена», после выхода одного «Повторить вход» успешен), E-6 («Выйти» и `page.close()` → плитка исчезает, системное сообщение).
     - Зависит от: 9.2.
     - _Requirements: FR-7, FR-8, FR-25, FR-27, FR-28, FR-31, US-5, US-9, US-10, US-11, Design: 11.4_
 
-  - [ ] 9.5 E2E: тумблеры и чат — **0.5 д**
+  - [x] 9.5 E2E: тумблеры и чат — **0.5 д**
     - E-4 (иконка микрофона и силуэт у собеседника; `videoTrack.readyState === 'ended'` у выключившего), E-5 (HTML в сообщении отображается текстом, формат `HH:MM`, история у вошедшего позже).
     - Зависит от: 9.2.
     - _Requirements: FR-15…FR-19, FR-21…FR-23, FR-39, US-7, US-8, Design: 11.4_
 
-  - [ ] 9.6 E2E: ошибки окружения — **0.5 д**
+  - [x] 9.6 E2E: ошибки окружения — **0.5 д**
     - E-7 (`addInitScript`: `getUserMedia` → `NotAllowedError`; пользователь в комнате, toast), E-8 (нет `RTCPeerConnection` → «WebRTC не поддерживается»), E-9 (`page.routeWebSocket` закрывает WebSocket и `page.route` обрывает polling для `/socket.io` → «Сервер недоступен»; `page.route` сам WebSocket не перехватывает, нужен Playwright ≥ 1.48).
     - Зависит от: 9.2.
     - _Requirements: FR-33, FR-35, FR-36, US-12, US-13, Design: 8.2, 11.4_
