@@ -238,14 +238,20 @@ describe('signal: вне комнаты и rate limit', () => {
     ]);
   });
 
-  it('некорректные сигналы лимит не расходуют; лимит у каждого сокета свой', () => {
+  it('некорректные сигналы тоже расходуют лимит; лимит у каждого сокета свой', () => {
     const { maria, alex, ivan } = roomWithThree();
+    // Алекс тратит весь запас мусорными payload, Иван — корректными, и один у него остаётся.
     for (let i = 0; i < 300; i += 1) alex.socket.send(SIGNAL, { to: maria.id, data: {} });
-    for (let i = 0; i < 301; i += 1) ivan.socket.send(SIGNAL, { to: maria.id, data: OFFER });
+    for (let i = 0; i < 299; i += 1) ivan.socket.send(SIGNAL, { to: maria.id, data: OFFER });
     maria.socket.clearReceived();
+    alex.socket.clearReceived();
 
     alex.socket.send(SIGNAL, { to: maria.id, data: OFFER });
+    ivan.socket.send(SIGNAL, { to: maria.id, data: OFFER });
 
-    expect(maria.socket.eventsOf(SIGNAL)).toEqual([{ from: alex.id, data: OFFER }]);
+    expect(alex.socket.eventsOf(SIGNAL_ERROR)).toEqual([
+      { to: maria.id, code: ERROR_CODES.RATE_LIMITED },
+    ]);
+    expect(maria.socket.eventsOf(SIGNAL)).toEqual([{ from: ivan.id, data: OFFER }]);
   });
 });

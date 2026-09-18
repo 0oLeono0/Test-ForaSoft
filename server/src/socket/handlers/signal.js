@@ -6,9 +6,12 @@ import { PEER_ID_MAX_LENGTH, validate } from '../validatePayload.js';
 
 /**
  * `signal`: ответа через ack нет, об ошибке отправитель узнаёт из `signal:error { to, code }`.
- * Сокет вне комнаты игнорируется. Далее: форма payload (INVALID_SIGNAL) → rate limit
- * (RATE_LIMITED) → получатель — другой участник той же комнаты (PEER_NOT_FOUND) → пересылка
+ * Сокет вне комнаты игнорируется. Далее: rate limit (RATE_LIMITED) → форма payload
+ * (INVALID_SIGNAL) → получатель — другой участник той же комнаты (PEER_NOT_FOUND) → пересылка
  * только ему. `from` проставляет сервер: значение из payload отбрасывается при проверке формы.
+ *
+ * Лимит списывается до проверки формы (TDD §10.4): иначе поток мусорных payload ничем не
+ * ограничен — на каждый уходит `signal:error`, и отбиваться от него дороже, чем его слать.
  * @param {HandlerContext} context
  * @param {unknown} payload
  */
@@ -16,14 +19,17 @@ export function handleSignal({ socket, io, roomManager, rateLimiter }, payload) 
   const { participantId } = socket.data;
   if (participantId === null) return;
 
+  if (!rateLimiter.consume(socket.id, 'signal')) {
+    return rejectSignal(socket, echoedPeerId(payload), ERROR_CODES.RATE_LIMITED);
+  }
   const parsed = validate('signal', payload);
   if (!parsed.ok) return rejectSignal(socket, echoedPeerId(payload), ERROR_CODES.INVALID_SIGNAL);
 
   const { to, data } = parsed.value;
-  if (!rateLimiter.consume(socket.id, 'signal')) {
-    return rejectSignal(socket, to, ERROR_CODES.RATE_LIMITED);
-  }
-  const target = to === participantId ? null : roomManager.getRoomOf(participantId).get(to);
+  // Комната на месте, пока `socket.data.participantId` заполнен, но на неожиданный порядок
+  // событий отвечаем PEER_NOT_FOUND, а не исключением в обработчике.
+  const room = roomManager.getRoomOf(participantId);
+  const target = to === participantId ? null : (room?.get(to) ?? null);
   if (!target) return rejectSignal(socket, to, ERROR_CODES.PEER_NOT_FOUND);
 
   io.to(target.socketId).emit(SERVER_EVENTS.SIGNAL, { from: participantId, data });
