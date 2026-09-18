@@ -326,7 +326,7 @@ flowchart LR
     - Зависит от: 8.1.
     - _Requirements: FR-15, FR-17, FR-19, FR-20, US-7, Design: 4.1.4, 7.4_
 
-  - [ ] 8.3 `PeerLink`: одно P2P-соединение — **1 д**
+  - [x] 8.3 `PeerLink`: одно P2P-соединение — **1 д**
     - `createOfferer` / `createAnswerer`: трансиверы `audio` + `video` `sendrecv`, `replaceTrack(localTrack ?? null)`, единственный обмен SDP через внедрённый `sendSignal`; `onnegotiationneeded` не используется.
     - Очередь ICE-кандидатов до `setRemoteDescription`; `candidate: null` → end-of-candidates.
     - `remoteStream` из `pc.getReceivers()`; `replaceTrack(kind, track)`; статус `connecting` → `connected` / `failed` (таймаут 15 с или `connectionState='failed'`); `close()`.
